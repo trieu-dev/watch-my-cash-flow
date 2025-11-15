@@ -1,0 +1,186 @@
+
+
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:intl/intl.dart';
+
+class MainPage extends StatefulWidget {
+  const MainPage({super.key});
+
+  @override
+  State<MainPage> createState() => _MainPageState();
+}
+
+class _MainPageState extends State<MainPage> {
+  DateTime month = DateTime(DateTime.now().year, DateTime.now().month);
+  bool isDarkMode = true;
+  final PageController _pageController = PageController(initialPage: 5000);
+
+  DateTime monthFromIndex(int pageIndex) {
+    return DateTime(
+      DateTime.now().year,
+      DateTime.now().month + (pageIndex - 5000),
+    );
+  }
+
+  @override
+  void initState() {
+    month = DateTime(DateTime.now().year, DateTime.now().month);
+    // TODO: implement initState
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        toolbarHeight: 60,
+        title: Text(DateFormat('MMMM').format(month)),
+        actions: [
+          Switch(
+            thumbIcon: WidgetStatePropertyAll(
+              isDarkMode ? Icon(Icons.dark_mode) : Icon(Icons.light_mode)
+            ),
+            value: isDarkMode,
+            onChanged: (value) {
+              Get.changeThemeMode(value ? ThemeMode.dark : ThemeMode.light);
+              setState(() { isDarkMode = value; });
+            }
+          )
+        ],
+      ),
+      body: SafeArea(
+        child: PageView.builder(
+          onPageChanged: (value) {
+            setState(() {
+              month = DateTime(
+                DateTime.now().year,
+                DateTime.now().month + (value - 5000),
+              );
+            });
+          },
+          controller: _pageController,
+          itemBuilder: (context, index) {
+            final month = monthFromIndex(index);
+            return MonthCalendar(month: month); // your existing month grid
+          },
+        )
+      )
+    );
+  }
+}
+
+class MonthCalendar extends StatelessWidget {
+  final DateTime month;
+
+  const MonthCalendar({super.key, required this.month});
+
+  
+  @override
+  Widget build(BuildContext context) {
+    final days = getCalendarDays(month);
+    final weekdays = days.sublist(0, 7);
+    final dayInMonthColor = Theme.of(context).colorScheme.onSurface;
+    final dayNotInMonthColor = Theme.of(context).colorScheme.surfaceContainerHighest;
+
+    return LayoutBuilder(builder: (context, constraints) {
+      // total usable width/height inside SafeArea
+      final totalWidth = constraints.maxWidth;
+      final totalHeight = constraints.maxHeight;
+
+      // subtract header (if you want no header set headerHeight = 0)
+      final availableHeight = totalHeight - 30;
+
+      // compute cell sizes
+      final cellWidth = (totalWidth - (6 * 2)) / 7;
+      final cellHeight = (availableHeight - (7 * 2)) / 6;
+
+      // childAspectRatio = cellWidth / cellHeight
+      final childAspectRatio = cellWidth / cellHeight;
+      return Padding(padding: EdgeInsets.all(2),
+        child: Column(
+          children: [
+            SizedBox(
+              height: 30,
+              child: Center(
+                child: GridView.builder(
+                padding: EdgeInsets.zero,
+                itemCount: weekdays.length,
+                shrinkWrap: true,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 7, // 7 days per row
+                  childAspectRatio: cellWidth / 30
+                ),
+                itemBuilder: (context, index) {
+                  final day = weekdays[index];
+
+                  return Center(
+                    child: Text(
+                      DateFormat.E().format(day),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: dayInMonthColor
+                    )
+                  ),
+                  );
+                },
+              ),
+              )
+            ),
+            Expanded(child: GridView.builder(
+              physics: NeverScrollableScrollPhysics(),
+              padding: EdgeInsets.zero,
+              itemCount: days.length,
+              shrinkWrap: true,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 7, // 7 days per row
+                mainAxisSpacing: 2,
+                crossAxisSpacing: 2,
+                childAspectRatio: childAspectRatio
+              ),
+              itemBuilder: (context, index) {
+                final day = days[index];
+                final isToday = isSameDate(day, DateTime.now());
+                final isCurrentMonth = day.month == month.month;
+
+                return Card(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                  color: isToday
+                      ? Get.theme.colorScheme.primary.withValues(alpha: .05)
+                      : Get.theme.cardTheme.color,
+                  child: Text(
+                        "${day.day}",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: isToday ? Get.theme.colorScheme.primary : (isCurrentMonth ? dayInMonthColor : dayNotInMonthColor),
+                          fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
+                        ),
+                      ),
+                );
+              },
+            ))
+          ],
+        )
+      );  
+  });
+  }
+
+  bool isSameDate(DateTime a, DateTime b) {
+    return a.year == b.year && a.month == b.month && a.day == b.day;
+  }
+}
+
+List<DateTime> getCalendarDays(DateTime month) {
+  // 1. First day of the month
+  final firstDayOfMonth = DateTime(month.year, month.month, 1);
+
+  // 2. Weekday of the first day (Mon=1 ... Sun=7)
+  int weekdayOfFirst = firstDayOfMonth.weekday;
+  // int weekdayOfFirst = DateTime.monday;
+
+  // 3. Calculate the first date shown in the calendar (previous Monday/Sunday)
+  DateTime firstDisplayDate = firstDayOfMonth.subtract(Duration(days: weekdayOfFirst % 7));
+
+  // 4. Generate 42 days for a 6×7 grid
+  return List.generate(42, (i) => firstDisplayDate.add(Duration(days: i)));
+}
