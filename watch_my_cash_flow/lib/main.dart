@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:watch_my_cash_flow/data/database/app_database.dart';
 import 'package:watch_my_cash_flow/main_page.dart';
 
 void main() {
+  initDatabase();
   runApp(const MyApp());
 }
 
@@ -15,19 +17,40 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       title: 'Flutter Demo',
       darkTheme: ThemeData(
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: Color(0xFF181A1B),
         appBarTheme: AppBarTheme(
           backgroundColor: Color(0xFF181A1B),
           centerTitle: true,
           titleTextStyle: TextStyle(color: Colors.white, fontSize: 18)
         ),
+        brightness: Brightness.dark,
         cardTheme: CardTheme(
           color: Color(0xFF1F2123),
           margin: EdgeInsets.all(0),
           elevation: .2,
           shadowColor: Colors.black.withAlpha(20),
         ),
+        datePickerTheme: DatePickerThemeData(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          backgroundColor: Color(0xFF1F2123),
+        ),
+        colorScheme: ColorScheme.dark(
+          primary: const Color(0xFF2ED6A8),
+          onPrimary: Colors.black,
+          secondary: const Color(0xFF2ED6A8),
+          onSecondary: Colors.black,
+          surface: const Color(0xFFE3E3E3),      // day in month text
+          surfaceContainerHighest: const Color(0xFF777777), // day NOT in month text
+        ),
+        dialogTheme: DialogThemeData(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          backgroundColor: Color(0xFF181A1B),
+        ),
+        dropdownMenuTheme: DropdownMenuThemeData(
+          menuStyle: MenuStyle(
+            backgroundColor: WidgetStatePropertyAll(Color(0xFF1F2123)),
+          ),
+        ),
+        scaffoldBackgroundColor: Color(0xFF181A1B),
         switchTheme: SwitchThemeData(
           thumbColor: WidgetStatePropertyAll(Color(0xFFFFFFFF)),
           trackColor: WidgetStatePropertyAll(Color(0xFFFFFFFF).withAlpha(100)),
@@ -45,30 +68,42 @@ class MyApp extends StatelessWidget {
           // displayMedium: TextStyle(color: Colors.white),
           // displayLarge: TextStyle(color: Colors.white),
         ),
-        colorScheme: ColorScheme.dark(
-          primary: const Color(0xFF2ED6A8),
-          onPrimary: Colors.black,
-          secondary: const Color(0xFF2ED6A8),
-          onSecondary: Colors.black,
-          surface: const Color(0xFFE3E3E3),      // day in month text
-          surfaceContainerHighest: const Color(0xFF777777), // day NOT in month text
-        ),
         useMaterial3: true,
       ),
       theme: ThemeData(
-        brightness: Brightness.light,
         appBarTheme: AppBarTheme(
           backgroundColor: Color(0xFFFFFFFF),
           centerTitle: true,
           titleTextStyle: TextStyle(color: Color(0xFF111111), fontSize: 18)
         ),
-        scaffoldBackgroundColor: Color(0xFFF8F9FA),
+        brightness: Brightness.light,
         cardTheme: CardTheme(
           color: Color(0xFFFFFFFF),
           margin: EdgeInsets.all(0),
           elevation: .2,
           shadowColor: Colors.grey.withAlpha(20),
         ),
+        colorScheme: ColorScheme.light(
+          primary: const Color(0xFF008940), // seed color
+          onPrimary: Colors.white,
+          secondary: const Color(0xFF009A88),
+          onSecondary: Colors.white,
+          surface: Colors.white,
+          onSurface: const Color(0xFF111111),          // day in month text
+          surfaceContainerHighest: const Color(0xFFAAAAAA),     // day NOT in month text
+        ),
+        dialogTheme: DialogThemeData(
+          backgroundColor: Color(0xFFFFFFFF),
+        ),
+        dropdownMenuTheme: DropdownMenuThemeData(
+          menuStyle: MenuStyle(
+            backgroundColor: WidgetStatePropertyAll(Color(0xFFFFFFFF)),
+          ),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          hintStyle: TextStyle(color: Color(0xFF111111).withAlpha(150)),
+        ),
+        scaffoldBackgroundColor: Color(0xFFF8F9FA),
         switchTheme: SwitchThemeData(
           thumbColor: WidgetStatePropertyAll(Color(0xFF111111)),
           trackColor: WidgetStatePropertyAll(Color(0xFF111111).withAlpha(100)),
@@ -85,15 +120,6 @@ class MyApp extends StatelessWidget {
           // labelLarge: TextStyle(color: Colors.white),
           // displayMedium: TextStyle(color: Colors.white),
           // displayLarge: TextStyle(color: Colors.white),
-        ),
-        colorScheme: ColorScheme.light(
-          primary: const Color(0xFF008940), // seed color
-          onPrimary: Colors.white,
-          secondary: const Color(0xFF009A88),
-          onSecondary: Colors.white,
-          surface: Colors.white,
-          onSurface: const Color(0xFF111111),          // day in month text
-          surfaceContainerHighest: const Color(0xFFAAAAAA),     // day NOT in month text
         ),
         useMaterial3: true,
       ),

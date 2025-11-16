@@ -3,6 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:watch_my_cash_flow/add_cash_flow_entry.dart';
+import 'package:watch_my_cash_flow/data/model/cash_flow_entry.dart';
+import 'package:watch_my_cash_flow/utils/money_text_formatter.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -15,6 +18,9 @@ class _MainPageState extends State<MainPage> {
   DateTime month = DateTime(DateTime.now().year, DateTime.now().month);
   bool isDarkMode = true;
   final PageController _pageController = PageController(initialPage: 5000);
+
+  List<CashFlowEntry> cashFlowEntries = [];
+  Map<DateTime, List<CashFlowEntry>> mDate2Entries = {};
 
   DateTime monthFromIndex(int pageIndex) {
     return DateTime(
@@ -62,18 +68,44 @@ class _MainPageState extends State<MainPage> {
           controller: _pageController,
           itemBuilder: (context, index) {
             final month = monthFromIndex(index);
-            return MonthCalendar(month: month); // your existing month grid
+            return MonthCalendar(month: month, mDate2Entries: mDate2Entries); // your existing month grid
           },
         )
-      )
+      ),
+      floatingActionButton: addEntryButton(),
+    );
+  }
+
+  Widget addEntryButton() {
+    return FloatingActionButton(
+      onPressed: () async {
+        final result = await showDialog<CashFlowEntry>(
+          context: context,
+          builder: (context) => AddCashFlowEntryDialog(),
+        );
+
+        if (result != null) {
+          // cashFlowEntries.add(result);
+          mDate2Entries.putIfAbsent(
+            DateTime(result.date.year, result.date.month, result.date.day),
+            () => []
+          ).add(result);
+          setState(() {});
+          // save to database, state, etc.
+          print("Saved: ${result.amount}");
+        }
+      },
+      backgroundColor: Get.theme.colorScheme.primary,
+      child: const Icon(Icons.add, color: Colors.white),
     );
   }
 }
 
 class MonthCalendar extends StatelessWidget {
   final DateTime month;
+  final Map<DateTime, List<CashFlowEntry>> mDate2Entries;
 
-  const MonthCalendar({super.key, required this.month});
+  const MonthCalendar({super.key, required this.month, required this.mDate2Entries});
 
   
   @override
@@ -142,13 +174,16 @@ class MonthCalendar extends StatelessWidget {
                 final day = days[index];
                 final isToday = isSameDate(day, DateTime.now());
                 final isCurrentMonth = day.month == month.month;
+                final entries = (mDate2Entries[day]??[]);
 
                 return Card(
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                   color: isToday
                       ? Get.theme.colorScheme.primary.withValues(alpha: .05)
                       : Get.theme.cardTheme.color,
-                  child: Text(
+                  child: Column(
+                    children: [
+                      Text(
                         "${day.day}",
                         textAlign: TextAlign.center,
                         style: TextStyle(
@@ -156,6 +191,28 @@ class MonthCalendar extends StatelessWidget {
                           fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
                         ),
                       ),
+                      ...entries.map((e) {
+                        return Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(4),
+                            border: Border.all(
+                              color: Get.theme.colorScheme.primary,
+                            ),
+                          ),
+                          padding: EdgeInsets.all(2),
+                          child: Text(
+                            formatter.format(e.amount),
+                            style: TextStyle(
+                              fontSize: 12,
+                              height: 1,
+                              color: Get.theme.colorScheme.primary,
+                            ),
+                          ),
+                        ).marginOnly(top: 2);
+                      }),
+                    ],
+                  ),
                 );
               },
             ))
