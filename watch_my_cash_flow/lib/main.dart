@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
           titleTextStyle: TextStyle(color: Colors.white, fontSize: 18)
         ),
         brightness: Brightness.dark,
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           color: Color(0xFF1F2123),
           margin: EdgeInsets.all(0),
           elevation: .2,
@@ -77,7 +77,7 @@ class MyApp extends StatelessWidget {
           titleTextStyle: TextStyle(color: Color(0xFF111111), fontSize: 18)
         ),
         brightness: Brightness.light,
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           color: Color(0xFFFFFFFF),
           margin: EdgeInsets.all(0),
           elevation: .2,

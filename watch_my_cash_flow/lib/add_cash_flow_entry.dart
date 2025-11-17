@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' as d;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -9,7 +10,8 @@ import 'package:flutter/services.dart';
 import 'package:watch_my_cash_flow/utils/money_text_formatter.dart';
 
 class AddCashFlowEntryDialog extends StatefulWidget {
-  const AddCashFlowEntryDialog({super.key});
+  final CashFlowEntry? entry;
+  const AddCashFlowEntryDialog({super.key, this.entry});
 
   @override
   State<AddCashFlowEntryDialog> createState() => _AddCashFlowEntryDialogState();
@@ -67,16 +69,6 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
                     labelText: "Category",
                   ),
                   onSubmitted: (value) async {
-                    // final newCategory = Category(
-                    //   id: nanoid(length: 8),
-                    //   name: value,
-                    //   isIncome: false,
-                    // );
-                    // setState(() {
-                    //   categories.add(newCategory);
-                    //   selectedCategory = newCategory;
-                    // });
-
                     await db.categoryDao.insertCategory(
                       CategoriesCompanion.insert(
                         id: nanoid(length: 8),
@@ -88,7 +80,7 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
                 )
               : DropdownButtonFormField<Category>(
                   dropdownColor: Get.theme.dropdownMenuTheme.menuStyle?.backgroundColor?.resolve({}),
-                  value: selectedCategory,
+                  initialValue: selectedCategory,
                   decoration: const InputDecoration(labelText: "Category"),
                   items: categories
                       .map((c) => DropdownMenuItem(value: c, child: Text(c.name)))
@@ -151,7 +143,7 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             ),
           ),
-          onPressed: () {
+          onPressed: () async {
             if (selectedCategory == null ||
                 _amountController.text.trim().isEmpty) {
               // missing data
@@ -168,7 +160,17 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
                   : _noteController.text,
             );
 
-            Navigator.pop(context, entry);
+            await db.entryDao.insertEntry(
+              CashFlowEntriesCompanion.insert(
+                id: entry.id,
+                date: entry.date,
+                amount: entry.amount,
+                categoryId: entry.categoryId,
+                note: d.Value(entry.note),
+              ),
+            );
+
+            Get.back(result: entry);
           },
           child: const Text("Save"),
         ),
