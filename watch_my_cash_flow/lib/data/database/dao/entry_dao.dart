@@ -15,11 +15,16 @@ class EntryDao extends DatabaseAccessor<AppDatabase>
   Future<List<CashFlowEntry>> getAll() =>
       select(cashFlowEntries).get();
 
+  Future<bool> updateEntry(CashFlowEntry entry) {
+    return update(cashFlowEntries).replace(entry);
+  }
+
   Stream<List<CashFlowEntry>> watchMonth(int month, int year) {
     return (select(cashFlowEntries)
           ..where((t) =>
               t.date.month.equals(month) &
               t.date.year.equals(year)))
         .watch();
+
   }
 }

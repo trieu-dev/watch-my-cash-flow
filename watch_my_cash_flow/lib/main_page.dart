@@ -49,6 +49,32 @@ class _MainPageState extends State<MainPage> {
     });
   }
 
+  void handleAfterUpdated(DateTime oldKey, CashFlowEntry entry) {
+    setState(() {
+      if (oldKey != DateTime(entry.date.year, entry.date.month, entry.date.day)) {
+        // remove from old key
+        final oldEntries = mDate2Entries[oldKey];
+        if (oldEntries != null) {
+          oldEntries.removeWhere((e) => e.id == entry.id);
+        }
+        // add to new key
+        mDate2Entries.putIfAbsent(
+          DateTime(entry.date.year, entry.date.month, entry.date.day),
+          () => []
+        ).add(entry);
+      } else {
+        // same date, just update the entry
+        final entries = mDate2Entries[oldKey];
+        if (entries != null) {
+          final index = entries.indexWhere((e) => e.id == entry.id);
+          if (index != -1) {
+            entries[index] = entry;
+          }
+        }
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -81,7 +107,7 @@ class _MainPageState extends State<MainPage> {
           controller: _pageController,
           itemBuilder: (context, index) {
             final month = monthFromIndex(index);
-            return MonthCalendar(month: month, mDate2Entries: mDate2Entries); // your existing month grid
+            return MonthCalendar(month: month, mDate2Entries: mDate2Entries, onAfterUpdated: handleAfterUpdated); // your existing month grid
           },
         )
       ),
@@ -117,8 +143,9 @@ class _MainPageState extends State<MainPage> {
 class MonthCalendar extends StatelessWidget {
   final DateTime month;
   final Map<DateTime, List<CashFlowEntry>> mDate2Entries;
+  final Function(DateTime, CashFlowEntry) onAfterUpdated;
 
-  const MonthCalendar({super.key, required this.month, required this.mDate2Entries});
+  const MonthCalendar({super.key, required this.month, required this.mDate2Entries, required this.onAfterUpdated});
 
   
   @override
@@ -205,21 +232,30 @@ class MonthCalendar extends StatelessWidget {
                         ),
                       ),
                       ...entries.map((e) {
-                        return Container(
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(4),
-                            border: Border.all(
-                              color: Get.theme.colorScheme.primary,
+                        return GestureDetector(
+                          onTap: () async {
+                            final result = await showDialog<CashFlowEntry>(
+                              context: context,
+                              builder: (context) => AddCashFlowEntryDialog(entry: e),
+                            );
+                            if (result != null) onAfterUpdated(e.date, result);
+                          },
+                          child: Container(
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(4),
+                              border: Border.all(
+                                color: Get.theme.colorScheme.primary,
+                              ),
                             ),
-                          ),
-                          padding: EdgeInsets.all(2),
-                          child: Text(
-                            formatter.format(e.amount),
-                            style: TextStyle(
-                              fontSize: 12,
-                              height: 1,
-                              color: Get.theme.colorScheme.primary,
+                            padding: EdgeInsets.all(2),
+                            child: Text(
+                              formatter.format(e.amount),
+                              style: TextStyle(
+                                fontSize: 12,
+                                height: 1,
+                                color: Get.theme.colorScheme.primary,
+                              ),
                             ),
                           ),
                         ).marginOnly(top: 2);

@@ -28,6 +28,11 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
   void initState() {
     // TODO: implement initState
     getCategories();
+
+    if (widget.entry != null) {
+      _amountController.text = formatter.format(widget.entry!.amount);
+      selectedDate = widget.entry!.date;
+    }
     super.initState();
   }
 
@@ -35,6 +40,7 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
     List<Category> response = await db.categoryDao.getAll();
     setState(() {
       categories = response;
+      selectedCategory = categories.isNotEmpty ? categories.firstWhereOrNull((o) => o.id == widget.entry?.categoryId) : null;
     });
   }
 
@@ -150,6 +156,18 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
               return;
             }
 
+            if (widget.entry != null) {
+              final entry = widget.entry!.copyWith(
+                amount: double.tryParse(_amountController.text.replaceAll('.', '')) ?? 0,
+                date: selectedDate,
+                categoryId: selectedCategory!.id,
+              );
+              await db.entryDao.updateEntry(entry);
+
+              Get.back(result: entry);
+              return;
+            }
+
             final entry = CashFlowEntry(
               id: nanoid(length: 8),
               date: selectedDate,
@@ -169,6 +187,7 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
                 note: d.Value(entry.note),
               ),
             );
+
 
             Get.back(result: entry);
           },
