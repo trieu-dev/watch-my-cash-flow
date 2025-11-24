@@ -1,6 +1,6 @@
 
 class Category {
-  final String id;
+  final BigInt id;
   final String name;
   final bool isIncome; // true = income category, false = expense
   final String? icon;  // optional icon name
@@ -16,9 +16,9 @@ class Category {
 
   factory Category.fromMap(Map<String, dynamic> map) {
     return Category(
-      id: map['id'],
+      id: BigInt.from(map['id']),
       name: map['name'],
-      isIncome: map['isIncome'],
+      isIncome: map['isIncome'] ?? false,
       icon: map['icon'],
       color: map['color'],
     );

@@ -2,7 +2,7 @@ class CashFlowEntry {
   final String id;
   final DateTime date;
   final double amount;
-  final String categoryId;
+  final BigInt categoryId;
   final String? note;
 
   CashFlowEntry({

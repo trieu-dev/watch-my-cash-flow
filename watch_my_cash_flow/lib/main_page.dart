@@ -4,8 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:watch_my_cash_flow/add_cash_flow_entry.dart';
-import 'package:watch_my_cash_flow/data/database/app_database.dart';
-// import 'package:watch_my_cash_flow/data/model/cash_flow_entry.dart';
+import 'package:watch_my_cash_flow/data/model/cash_flow_entry.dart';
 import 'package:watch_my_cash_flow/utils/money_text_formatter.dart';
 
 class MainPage extends StatefulWidget {
@@ -39,9 +38,8 @@ class _MainPageState extends State<MainPage> {
   }
 
   Future init() async {
-    List<CashFlowEntry> response = await db.entryDao.getAll();
     setState(() {
-      cashFlowEntries = response;
+      // cashFlowEntries = response;
       mDate2Entries = { for (var entry in cashFlowEntries) 
         DateTime(entry.date.year, entry.date.month, entry.date.day):
           (mDate2Entries[DateTime(entry.date.year, entry.date.month, entry.date.day)] ?? [])..add(entry)

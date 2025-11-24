@@ -43,6 +43,7 @@ dependencies:
   path_provider: ^2.1.5
   path: ^1.9.1
   dropdown_search: ^6.0.2
+  supabase_flutter: ^2.10.3
 
 dev_dependencies:
   flutter_test:

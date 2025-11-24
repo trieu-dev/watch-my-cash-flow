@@ -1,11 +1,11 @@
-import 'package:drift/drift.dart' as d;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:nanoid2/nanoid2.dart';
-import 'package:watch_my_cash_flow/data/database/app_database.dart';
-// import 'package:watch_my_cash_flow/data/model/cash_flow_entry.dart';
-// import 'package:watch_my_cash_flow/data/model/category.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+// import 'package:watch_my_cash_flow/data/database/app_database.dart';
+import 'package:watch_my_cash_flow/data/model/cash_flow_entry.dart';
+import 'package:watch_my_cash_flow/data/model/category.dart';
 import 'package:flutter/services.dart';
 import 'package:watch_my_cash_flow/utils/money_text_formatter.dart';
 
@@ -37,9 +37,12 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
   }
 
   Future getCategories() async {
-    List<Category> response = await db.categoryDao.getAll();
+    final res = await Supabase.instance.client.from('categories').select('id, name');
     setState(() {
-      categories = response;
+      // categories = response;
+      categories = (res as List)
+        .map((m) => Category.fromMap(m as Map<String, dynamic>))
+        .toList();
       selectedCategory = categories.isNotEmpty ? categories.firstWhereOrNull((o) => o.id == widget.entry?.categoryId) : null;
     });
   }
@@ -75,13 +78,9 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
                     labelText: "Category",
                   ),
                   onSubmitted: (value) async {
-                    await db.categoryDao.insertCategory(
-                      CategoriesCompanion.insert(
-                        id: nanoid(length: 8),
-                        name: value,
-                        isIncome: false,
-                      ),
-                    );
+                    await Supabase.instance.client.from('categories').insert({
+                      'name': value,
+                    });
                   },
                 )
               : DropdownButtonFormField<Category>(
@@ -157,14 +156,14 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
             }
 
             if (widget.entry != null) {
-              final entry = widget.entry!.copyWith(
-                amount: double.tryParse(_amountController.text.replaceAll('.', '')) ?? 0,
-                date: selectedDate,
-                categoryId: selectedCategory!.id,
-              );
-              await db.entryDao.updateEntry(entry);
+              // final entry = widget.entry!.copyWith(
+              //   amount: double.tryParse(_amountController.text.replaceAll('.', '')) ?? 0,
+              //   date: selectedDate,
+              //   categoryId: selectedCategory!.id,
+              // );
+              // await db.entryDao.updateEntry(entry);
 
-              Get.back(result: entry);
+              // Get.back(result: entry);
               return;
             }
 
@@ -178,17 +177,6 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
                   : _noteController.text,
             );
 
-            await db.entryDao.insertEntry(
-              CashFlowEntriesCompanion.insert(
-                id: entry.id,
-                date: entry.date,
-                amount: entry.amount,
-                categoryId: entry.categoryId,
-                note: d.Value(entry.note),
-              ),
-            );
-
-
             Get.back(result: entry);
           },
           child: const Text("Save"),
@@ -197,9 +185,3 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
     );
   }
 }
-
-final demoCategories = [
-  Category(id: '1', name: 'Food', isIncome: false),
-  Category(id: '2', name: 'Salary', isIncome: true),
-  Category(id: '3', name: 'Transport', isIncome: false),
-];
