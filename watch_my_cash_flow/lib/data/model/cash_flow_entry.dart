@@ -1,5 +1,5 @@
 class CashFlowEntry {
-  final String id;
+  final BigInt id;
   final DateTime date;
   final double amount;
   final BigInt categoryId;
@@ -13,12 +13,27 @@ class CashFlowEntry {
     this.note,
   });
 
+  CashFlowEntry copyWith({
+    DateTime? date,
+    double? amount,
+    BigInt? categoryId,
+    String? note,
+  }) {
+    return CashFlowEntry(
+      id: id,
+      date: date ?? this.date,
+      amount: amount ?? this.amount,
+      categoryId: categoryId ?? this.categoryId,
+      note: note ?? this.note,
+    );
+  }
+
   factory CashFlowEntry.fromMap(Map<String, dynamic> map) {
     return CashFlowEntry(
-      id: map['id'],
+      id: BigInt.from(map['id']),
       date: DateTime.parse(map['date']),
-      amount: map['amount'],
-      categoryId: map['categoryId'],
+      amount: double.parse(map['amount'].toString()),
+      categoryId: BigInt.from(map['category_id']),
       note: map['note'],
     );
   }

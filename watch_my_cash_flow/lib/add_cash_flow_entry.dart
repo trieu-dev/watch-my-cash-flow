@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:nanoid2/nanoid2.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-// import 'package:watch_my_cash_flow/data/database/app_database.dart';
 import 'package:watch_my_cash_flow/data/model/cash_flow_entry.dart';
 import 'package:watch_my_cash_flow/data/model/category.dart';
 import 'package:flutter/services.dart';
@@ -45,6 +43,22 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
         .toList();
       selectedCategory = categories.isNotEmpty ? categories.firstWhereOrNull((o) => o.id == widget.entry?.categoryId) : null;
     });
+  }
+
+  Future updateEntry() async {
+    final amount = double.tryParse(_amountController.text.replaceAll('.', '')) ?? 0;
+    final categoryId = selectedCategory!.id;
+    final note = _noteController.text.trim().isEmpty
+        ? null
+        : _noteController.text;
+    await Supabase.instance.client.from('cash_flow_entries')
+    .update({
+      'date': DateFormat.yMd().format(selectedDate),
+      'amount': amount,
+      'category_id': categoryId.toInt(),
+      'note': note,
+    })
+    .eq('id', widget.entry!.id.toInt());
   }
 
   @override
@@ -156,19 +170,20 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
             }
 
             if (widget.entry != null) {
-              // final entry = widget.entry!.copyWith(
-              //   amount: double.tryParse(_amountController.text.replaceAll('.', '')) ?? 0,
-              //   date: selectedDate,
-              //   categoryId: selectedCategory!.id,
-              // );
-              // await db.entryDao.updateEntry(entry);
+              final entry = widget.entry!.copyWith(
+                amount: double.tryParse(_amountController.text.replaceAll('.', '')) ?? 0,
+                date: selectedDate,
+                categoryId: selectedCategory!.id,
+              );
 
-              // Get.back(result: entry);
+              await updateEntry();
+              Get.back(result: entry);
+              
               return;
             }
 
             final entry = CashFlowEntry(
-              id: nanoid(length: 8),
+              id: BigInt.from(-1),
               date: selectedDate,
               amount: double.tryParse(_amountController.text.replaceAll('.', '')) ?? 0,
               categoryId: selectedCategory!.id,
@@ -176,6 +191,12 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
                   ? null
                   : _noteController.text,
             );
+
+            await Supabase.instance.client.from('cash_flow_entries').insert({
+              'date': selectedDate.toIso8601String(),
+              'amount': double.tryParse(_amountController.text.replaceAll('.', '')) ?? 0,
+              'category_id': selectedCategory!.id.toInt(),
+            });
 
             Get.back(result: entry);
           },

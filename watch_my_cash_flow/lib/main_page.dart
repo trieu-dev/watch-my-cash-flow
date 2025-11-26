@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:watch_my_cash_flow/add_cash_flow_entry.dart';
 import 'package:watch_my_cash_flow/data/model/cash_flow_entry.dart';
 import 'package:watch_my_cash_flow/utils/money_text_formatter.dart';
@@ -38,9 +39,11 @@ class _MainPageState extends State<MainPage> {
   }
 
   Future init() async {
+    final res = await Supabase.instance.client.from('cash_flow_entries').select('id, amount, date, category_id, note');
+    final data = (res as List).map((m) => CashFlowEntry.fromMap(m as Map<String, dynamic>))
+                              .toList();
     setState(() {
-      // cashFlowEntries = response;
-      mDate2Entries = { for (var entry in cashFlowEntries) 
+      mDate2Entries = { for (var entry in data) 
         DateTime(entry.date.year, entry.date.month, entry.date.day):
           (mDate2Entries[DateTime(entry.date.year, entry.date.month, entry.date.day)] ?? [])..add(entry)
       };
