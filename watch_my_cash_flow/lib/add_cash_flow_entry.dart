@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -65,6 +67,7 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      contentPadding: EdgeInsets.all(16),
       title: const Text("Add Cash Flow"),
       content: SingleChildScrollView(
         child: Column(
@@ -93,13 +96,6 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
             categories.isEmpty
               ? addNewCategoryField()
               : buildCategoryDropdown(),
-
-            ...isAddingCategory
-            ? [
-                const SizedBox(height: 16),
-                addNewCategoryField(),
-              ]
-            : [],
 
             const SizedBox(height: 16),
 
@@ -140,7 +136,7 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
                 )
               ),
               onTapOutside: (event) => FocusScope.of(context).unfocus(),
-            ),
+            )
           ],
         ),
       ),
@@ -231,6 +227,46 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
     );
   }
 
+  Widget categorySection() {
+    return AnimatedSwitcher(
+      duration: Duration(milliseconds: 500),
+      transitionBuilder: (child, animation) {
+        final rotate = Tween(begin: pi, end: 0.0).animate(animation);
+
+        return AnimatedBuilder(
+          animation: rotate,
+          child: child,
+          builder: (context, child) {
+            final angle = rotate.value;
+
+            return Transform(
+              alignment: Alignment.center,
+              transform: Matrix4.rotationX(angle),
+              child: child,
+            );
+          },
+        );
+      },
+      child: isAddingCategory
+          ? addNewCategoryField()
+          : DropdownButtonFormField<Category>(
+              padding: EdgeInsets.zero,
+              dropdownColor: Get.theme.dropdownMenuTheme.menuStyle?.backgroundColor?.resolve({}),
+              initialValue: selectedCategory,
+              decoration: const InputDecoration(
+                labelText: "Category",
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(16)),
+                )
+              ),
+              items: categories
+                  .map((c) => DropdownMenuItem(value: c, child: Text(c.name)))
+                  .toList(),
+              onChanged: (c) => setState(() => selectedCategory = c),
+            )
+    );
+  }
+
   bool isAddingCategory = false;
 
   Widget addNewCategoryField() {
@@ -252,49 +288,39 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-      Expanded(child: DropdownButtonFormField<Category>(
-        padding: EdgeInsets.zero,
-        dropdownColor: Get.theme.dropdownMenuTheme.menuStyle?.backgroundColor?.resolve({}),
-        initialValue: selectedCategory,
-        decoration: const InputDecoration(
-          labelText: "Category",
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.all(Radius.circular(16)),
-          )
-        ),
-        items: categories
-            .map((c) => DropdownMenuItem(value: c, child: Text(c.name)))
-            .toList(),
-        onChanged: (c) => setState(() => selectedCategory = c),
-      )),
+      Expanded(
+        child: categorySection()
+      ),
       const SizedBox(width: 8),
-      FilledButton(
+      IconButton(
         style: ButtonStyle(
           padding: WidgetStatePropertyAll(EdgeInsets.zero),
-          visualDensity: VisualDensity(horizontal: VisualDensity.minimumDensity),
+          visualDensity: VisualDensity(horizontal: VisualDensity.minimumDensity, vertical: VisualDensity.minimumDensity),
           shape: WidgetStatePropertyAll(
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            CircleBorder(),
           ),
+          backgroundColor: WidgetStatePropertyAll(Get.theme.colorScheme.primary),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap
         ),
         onPressed: () {
           setState(() {
             isAddingCategory = !isAddingCategory;
           });
         },
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
       )
     ]);
   }
 }
 
 Widget cancelButton(BuildContext context) {
-    return TextButton(
-      style: ButtonStyle(
-        shape: WidgetStatePropertyAll(
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        ),
+  return TextButton(
+    style: ButtonStyle(
+      shape: WidgetStatePropertyAll(
+        RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
-      onPressed: () => Navigator.pop(context),
-      child: const Text("Cancel"),
-    );
-  }
+    ),
+    onPressed: () => Navigator.pop(context),
+    child: const Text("Cancel"),
+  );
+}
