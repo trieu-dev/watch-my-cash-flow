@@ -199,6 +199,7 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
           'date': selectedDate.toIso8601String(),
           'amount': double.tryParse(_amountController.text.replaceAll('.', '')) ?? 0,
           'category_id': selectedCategory!.id.toInt(),
+          'note': entry.note,
         });
 
         Get.back(result: entry);
