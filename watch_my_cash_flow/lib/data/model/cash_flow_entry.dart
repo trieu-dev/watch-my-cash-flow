@@ -13,6 +13,8 @@ class CashFlowEntry {
     this.note,
   });
 
+  DateTime get dateOnly => DateTime(date.year, date.month, date.day);
+
   CashFlowEntry copyWith({
     DateTime? date,
     double? amount,

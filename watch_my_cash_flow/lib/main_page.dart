@@ -30,6 +30,16 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
+  double get total {
+    double total = 0;
+    final keys = mDate2Entries.keys;
+    for (var key in keys) {
+      final entry = mDate2Entries[key]!;
+      total += entry.fold(0, (prev, element) => prev + element.amount);
+    }
+    return total;
+  }
+
   @override
   void initState() {
     month = DateTime(DateTime.now().year, DateTime.now().month);
@@ -43,16 +53,16 @@ class _MainPageState extends State<MainPage> {
     final data = (res as List).map((m) => CashFlowEntry.fromMap(m as Map<String, dynamic>))
                               .toList();
     setState(() {
-      mDate2Entries = { for (var entry in data) 
-        DateTime(entry.date.year, entry.date.month, entry.date.day):
-          (mDate2Entries[DateTime(entry.date.year, entry.date.month, entry.date.day)] ?? [])..add(entry)
-      };
+      cashFlowEntries = data;
+      for (var entry in data) {
+        mDate2Entries.putIfAbsent(entry.dateOnly, () => []).add(entry);
+      }
     });
   }
 
   void handleAfterUpdated(DateTime oldKey, CashFlowEntry entry) {
     setState(() {
-      if (oldKey != DateTime(entry.date.year, entry.date.month, entry.date.day)) {
+      if (oldKey != entry.dateOnly) {
         // remove from old key
         final oldEntries = mDate2Entries[oldKey];
         if (oldEntries != null) {
@@ -60,7 +70,7 @@ class _MainPageState extends State<MainPage> {
         }
         // add to new key
         mDate2Entries.putIfAbsent(
-          DateTime(entry.date.year, entry.date.month, entry.date.day),
+          entry.dateOnly,
           () => []
         ).add(entry);
       } else {
@@ -79,22 +89,7 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 60,
-        title: Text(DateFormat('MMMM').format(month)),
-        actions: [
-          Switch(
-            thumbIcon: WidgetStatePropertyAll(
-              isDarkMode ? Icon(Icons.dark_mode) : Icon(Icons.light_mode)
-            ),
-            value: isDarkMode,
-            onChanged: (value) {
-              Get.changeThemeMode(value ? ThemeMode.dark : ThemeMode.light);
-              setState(() { isDarkMode = value; });
-            }
-          )
-        ],
-      ),
+      appBar: appBar(),
       body: SafeArea(
         child: PageView.builder(
           onPageChanged: (value) {
@@ -113,6 +108,41 @@ class _MainPageState extends State<MainPage> {
         )
       ),
       floatingActionButton: addEntryButton(),
+    );
+  }
+
+  AppBar appBar() {
+    return AppBar(
+      toolbarHeight: 60,
+      title: Text(DateFormat('MMMM').format(month)), // Display month name
+      leading: totalAmount(),
+      leadingWidth: 120,
+      actions: [ mode() ]
+    );
+  }
+
+  Widget totalAmount() {
+    return Center(
+      child: Text("Total: ${formatter.format(total)}",
+        style: TextStyle(
+          fontWeight: FontWeight.w600,
+          color: Get.theme.colorScheme.primary,
+        ),
+        textAlign: TextAlign.left,
+      ).marginOnly(left: 4),
+    );
+  }
+
+  Widget mode() {
+    return Switch(
+      thumbIcon: WidgetStatePropertyAll(
+        isDarkMode ? Icon(Icons.dark_mode) : Icon(Icons.light_mode)
+      ),
+      value: isDarkMode,
+      onChanged: (value) {
+        Get.changeThemeMode(value ? ThemeMode.dark : ThemeMode.light);
+        setState(() { isDarkMode = value; });
+      }
     );
   }
 

@@ -77,37 +77,31 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
                 FilteringTextInputFormatter.digitsOnly,
                 VNDTextInputFormatter(),
               ],
+              onTapOutside: (event) => FocusScope.of(context).unfocus(),
               decoration: const InputDecoration(
                 labelText: "Amount",
                 prefixIcon: Icon(Icons.attach_money),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(16)),
+                )
               ),
             ),
 
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
 
             // Category (dropdown)
             categories.isEmpty
-              ? TextField(
-                  decoration: const InputDecoration(
-                    labelText: "Category",
-                  ),
-                  onSubmitted: (value) async {
-                    await Supabase.instance.client.from('categories').insert({
-                      'name': value,
-                    });
-                  },
-                )
-              : DropdownButtonFormField<Category>(
-                  dropdownColor: Get.theme.dropdownMenuTheme.menuStyle?.backgroundColor?.resolve({}),
-                  initialValue: selectedCategory,
-                  decoration: const InputDecoration(labelText: "Category"),
-                  items: categories
-                      .map((c) => DropdownMenuItem(value: c, child: Text(c.name)))
-                      .toList(),
-                  onChanged: (c) => setState(() => selectedCategory = c),
-                ),
+              ? addNewCategoryField()
+              : buildCategoryDropdown(),
 
-            const SizedBox(height: 12),
+            ...isAddingCategory
+            ? [
+                const SizedBox(height: 16),
+                addNewCategoryField(),
+              ]
+            : [],
+
+            const SizedBox(height: 16),
 
             // Date
             Row(
@@ -134,75 +128,173 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
               ],
             ),
 
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
 
             // Note
             TextField(
               controller: _noteController,
               decoration: const InputDecoration(
                 labelText: "Note (optional)",
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(16))
+                )
               ),
+              onTapOutside: (event) => FocusScope.of(context).unfocus(),
             ),
           ],
         ),
       ),
       actions: [
-        TextButton(
-          style: ButtonStyle(
-            shape: WidgetStatePropertyAll(
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            deleteButton(),
+            Row(
+              children: [
+                cancelButton(context),
+                const SizedBox(width: 8),
+                saveButton()
+              ],
             ),
-          ),
-          onPressed: () => Navigator.pop(context),
-          child: const Text("Cancel"),
-        ),
-        FilledButton(
-          style: ButtonStyle(
-            shape: WidgetStatePropertyAll(
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            ),
-          ),
-          onPressed: () async {
-            if (selectedCategory == null ||
-                _amountController.text.trim().isEmpty) {
-              // missing data
-              return;
-            }
-
-            if (widget.entry != null) {
-              final entry = widget.entry!.copyWith(
-                amount: double.tryParse(_amountController.text.replaceAll('.', '')) ?? 0,
-                date: selectedDate,
-                categoryId: selectedCategory!.id,
-              );
-
-              await updateEntry();
-              Get.back(result: entry);
-              
-              return;
-            }
-
-            final entry = CashFlowEntry(
-              id: BigInt.from(-1),
-              date: selectedDate,
-              amount: double.tryParse(_amountController.text.replaceAll('.', '')) ?? 0,
-              categoryId: selectedCategory!.id,
-              note: _noteController.text.trim().isEmpty
-                  ? null
-                  : _noteController.text,
-            );
-
-            await Supabase.instance.client.from('cash_flow_entries').insert({
-              'date': selectedDate.toIso8601String(),
-              'amount': double.tryParse(_amountController.text.replaceAll('.', '')) ?? 0,
-              'category_id': selectedCategory!.id.toInt(),
-            });
-
-            Get.back(result: entry);
-          },
-          child: const Text("Save"),
+          ],
         ),
       ],
     );
   }
+
+  Widget saveButton() {
+    return FilledButton(
+      style: ButtonStyle(
+        shape: WidgetStatePropertyAll(
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        ),
+      ),
+      onPressed: () async {
+        if (selectedCategory == null ||
+            _amountController.text.trim().isEmpty) {
+          // missing data
+          return;
+        }
+
+        if (widget.entry != null) {
+          final entry = widget.entry!.copyWith(
+            amount: double.tryParse(_amountController.text.replaceAll('.', '')) ?? 0,
+            date: selectedDate,
+            categoryId: selectedCategory!.id,
+          );
+
+          await updateEntry();
+          Get.back(result: entry);
+          
+          return;
+        }
+
+        final entry = CashFlowEntry(
+          id: BigInt.from(-1),
+          date: selectedDate,
+          amount: double.tryParse(_amountController.text.replaceAll('.', '')) ?? 0,
+          categoryId: selectedCategory!.id,
+          note: _noteController.text.trim().isEmpty
+              ? null
+              : _noteController.text,
+        );
+
+        await Supabase.instance.client.from('cash_flow_entries').insert({
+          'date': selectedDate.toIso8601String(),
+          'amount': double.tryParse(_amountController.text.replaceAll('.', '')) ?? 0,
+          'category_id': selectedCategory!.id.toInt(),
+        });
+
+        Get.back(result: entry);
+      },
+      child: const Text("Save"),
+    );
+  }
+
+  Widget deleteButton() {
+    return TextButton(
+      style: ButtonStyle(
+        shape: WidgetStatePropertyAll(
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        ),
+        padding: WidgetStatePropertyAll(EdgeInsets.zero),
+        visualDensity: VisualDensity(horizontal: VisualDensity.minimumDensity),
+        overlayColor: WidgetStatePropertyAll(Colors.red.withValues(alpha: .1)),
+      ),
+      onPressed: () async {
+        await Supabase.instance.client.from('cash_flow_entries')
+          .delete()
+          .eq('id', widget.entry!.id.toInt());
+        Get.back(result: widget.entry);
+      },
+      child: Icon(Icons.delete, color: Colors.red)
+    );
+  }
+
+  bool isAddingCategory = false;
+
+  Widget addNewCategoryField() {
+    return TextField(
+      decoration: const InputDecoration(
+        labelText: "Add Category",
+        border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(16)))
+      ),
+      onSubmitted: (value) async {
+        await Supabase.instance.client.from('categories').insert({
+          'name': value,
+        });
+      },
+      onTapOutside: (event) => FocusScope.of(context).unfocus(),
+    );
+  }
+
+  Widget buildCategoryDropdown() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+      Expanded(child: DropdownButtonFormField<Category>(
+        padding: EdgeInsets.zero,
+        dropdownColor: Get.theme.dropdownMenuTheme.menuStyle?.backgroundColor?.resolve({}),
+        initialValue: selectedCategory,
+        decoration: const InputDecoration(
+          labelText: "Category",
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(16)),
+          )
+        ),
+        items: categories
+            .map((c) => DropdownMenuItem(value: c, child: Text(c.name)))
+            .toList(),
+        onChanged: (c) => setState(() => selectedCategory = c),
+      )),
+      const SizedBox(width: 8),
+      FilledButton(
+        style: ButtonStyle(
+          padding: WidgetStatePropertyAll(EdgeInsets.zero),
+          visualDensity: VisualDensity(horizontal: VisualDensity.minimumDensity),
+          shape: WidgetStatePropertyAll(
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          ),
+        ),
+        onPressed: () {
+          setState(() {
+            isAddingCategory = !isAddingCategory;
+          });
+        },
+        child: const Icon(Icons.add),
+      )
+    ]);
+  }
 }
+
+Widget cancelButton(BuildContext context) {
+    return TextButton(
+      style: ButtonStyle(
+        shape: WidgetStatePropertyAll(
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        ),
+      ),
+      onPressed: () => Navigator.pop(context),
+      child: const Text("Cancel"),
+    );
+  }
