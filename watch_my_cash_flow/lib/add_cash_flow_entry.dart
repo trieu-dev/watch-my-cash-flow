@@ -3,7 +3,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:watch_my_cash_flow/app/services/supabase_service.dart';
+// import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:watch_my_cash_flow/data/model/cash_flow_entry.dart';
 import 'package:watch_my_cash_flow/data/model/category.dart';
 import 'package:flutter/services.dart';
@@ -37,7 +38,7 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
   }
 
   Future getCategories() async {
-    final res = await Supabase.instance.client.from('categories').select('id, name');
+    final res = await SupabaseService().client.from('categories').select('id, name');
     setState(() {
       // categories = response;
       categories = (res as List)
@@ -53,7 +54,7 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
     final note = _noteController.text.trim().isEmpty
         ? null
         : _noteController.text;
-    await Supabase.instance.client.from('cash_flow_entries')
+    await SupabaseService().client.from('cash_flow_entries')
     .update({
       'date': DateFormat.yMd().format(selectedDate),
       'amount': amount,
@@ -195,7 +196,7 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
               : _noteController.text,
         );
 
-        await Supabase.instance.client.from('cash_flow_entries').insert({
+        await SupabaseService().client.from('cash_flow_entries').insert({
           'date': selectedDate.toIso8601String(),
           'amount': double.tryParse(_amountController.text.replaceAll('.', '')) ?? 0,
           'category_id': selectedCategory!.id.toInt(),
@@ -219,7 +220,7 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
         overlayColor: WidgetStatePropertyAll(Colors.red.withValues(alpha: .1)),
       ),
       onPressed: () async {
-        await Supabase.instance.client.from('cash_flow_entries')
+        await SupabaseService().client.from('cash_flow_entries')
           .delete()
           .eq('id', widget.entry!.id.toInt());
         Get.back(result: widget.entry);
@@ -277,7 +278,7 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
         border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(16)))
       ),
       onSubmitted: (value) async {
-        await Supabase.instance.client.from('categories').insert({
+        await SupabaseService().client.from('categories').insert({
           'name': value,
         });
       },
