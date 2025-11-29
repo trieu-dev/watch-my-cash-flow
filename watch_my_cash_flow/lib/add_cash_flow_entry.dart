@@ -39,13 +39,14 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
 
   Future getCategories() async {
     final res = await SupabaseService().client.from('categories').select('id, name');
-    setState(() {
-      // categories = response;
-      categories = (res as List)
-        .map((m) => Category.fromMap(m as Map<String, dynamic>))
-        .toList();
-      selectedCategory = categories.isNotEmpty ? categories.firstWhereOrNull((o) => o.id == widget.entry?.categoryId) : null;
-    });
+    
+    categories = (res as List)
+      .map((m) => Category.fromMap(m as Map<String, dynamic>))
+      .toList();
+    categories.sort((a, b) => a.name.compareTo(b.name));
+    selectedCategory = categories.isNotEmpty ? categories.firstWhereOrNull((o) => o.id == widget.entry?.categoryId) : null;
+    
+    setState(() { });
   }
 
   Future updateEntry() async {
@@ -141,6 +142,7 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
           ],
         ),
       ),
+      actionsPadding: EdgeInsets.all(16),
       actions: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -210,6 +212,8 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
   }
 
   Widget deleteButton() {
+    if (widget.entry == null) return SizedBox.shrink();
+
     return TextButton(
       style: ButtonStyle(
         shape: WidgetStatePropertyAll(
@@ -294,24 +298,65 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
         child: categorySection()
       ),
       const SizedBox(width: 8),
-      IconButton(
-        style: ButtonStyle(
-          padding: WidgetStatePropertyAll(EdgeInsets.zero),
-          visualDensity: VisualDensity(horizontal: VisualDensity.minimumDensity, vertical: VisualDensity.minimumDensity),
-          shape: WidgetStatePropertyAll(
-            CircleBorder(),
-          ),
-          backgroundColor: WidgetStatePropertyAll(Get.theme.colorScheme.primary),
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap
-        ),
-        onPressed: () {
-          setState(() {
-            isAddingCategory = !isAddingCategory;
-          });
-        },
-        icon: const Icon(Icons.add),
-      )
+      categoryButton()
     ]);
+  }
+
+  Widget categoryButton() {
+    return AnimatedSwitcher(
+      duration: Duration(milliseconds: 500),
+      transitionBuilder: (child, animation) {
+        final rotate = Tween(begin: pi, end: 0.0).animate(animation);
+
+        return AnimatedBuilder(
+          animation: rotate,
+          child: child,
+          builder: (context, child) {
+            final angle = rotate.value;
+
+            return Transform(
+              alignment: Alignment.center,
+              transform: Matrix4.rotationX(angle),
+              child: child,
+            );
+          },
+        );
+      },
+      child: isAddingCategory
+          ? IconButton(
+              style: ButtonStyle(
+                padding: WidgetStatePropertyAll(EdgeInsets.zero),
+                visualDensity: VisualDensity(horizontal: VisualDensity.minimumDensity, vertical: VisualDensity.minimumDensity),
+                shape: WidgetStatePropertyAll(
+                  CircleBorder(),
+                ),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap
+              ),
+              onPressed: () {
+                setState(() {
+                  isAddingCategory = !isAddingCategory;
+                });
+              },
+              icon: const Icon(Icons.close),
+            )
+          : IconButton(
+              style: ButtonStyle(
+                padding: WidgetStatePropertyAll(EdgeInsets.zero),
+                visualDensity: VisualDensity(horizontal: VisualDensity.minimumDensity, vertical: VisualDensity.minimumDensity),
+                shape: WidgetStatePropertyAll(
+                  CircleBorder(),
+                ),
+                backgroundColor: WidgetStatePropertyAll(Get.theme.colorScheme.primary),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap
+              ),
+              onPressed: () {
+                setState(() {
+                  isAddingCategory = !isAddingCategory;
+                });
+              },
+              icon: const Icon(Icons.add),
+            )
+    );
   }
 }
 
