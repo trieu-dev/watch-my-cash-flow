@@ -2,12 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:watch_my_cash_flow/app/services/supabase_service.dart';
-import 'package:watch_my_cash_flow/data/database/app_database.dart';
 import 'package:watch_my_cash_flow/main_page.dart';
 
 void main() async {
-  initDatabase();
-
   WidgetsFlutterBinding.ensureInitialized();
 
   // load .env
