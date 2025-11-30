@@ -1,0 +1,52 @@
+import 'dart:ui';
+
+import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+class LocalizationService extends GetxService {
+  static const _key = 'app_locale';
+
+  final fallbackLocale = const Locale('en', 'US');
+  final supportedLocales = [
+    const Locale('en', 'US'),
+    const Locale('vi', 'VN'),
+    const Locale('zh', 'CN'),
+  ];
+
+  Future<LocalizationService> init() async {
+    final saved = await _loadSavedLocale();
+    print(saved);
+    if (saved != null) {
+      Get.updateLocale(saved);
+    }
+    return this;
+  }
+
+  String get currentLanguageCode =>
+      Get.locale?.languageCode ?? fallbackLocale.languageCode;
+
+  String get currentCountryCode =>
+      Get.locale?.countryCode ?? fallbackLocale.countryCode ?? '';
+
+  /// Save locale to SharedPreferences
+  Future<void> saveLocale(Locale locale) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_key, '${locale.languageCode}_${locale.countryCode}');
+  }
+
+  /// Read locale from SharedPreferences
+  Future<Locale?> _loadSavedLocale() async {
+    final prefs = await SharedPreferences.getInstance();
+    final value = prefs.getString(_key);
+    if (value == null) return null;
+
+    final parts = value.split('_');
+    return Locale(parts[0], parts.length > 1 ? parts[1] : '');
+  }
+
+  /// Change language
+  Future<void> changeLocale(Locale locale) async {
+    await saveLocale(locale);
+    Get.updateLocale(locale);
+  }
+}

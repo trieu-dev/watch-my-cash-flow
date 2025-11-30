@@ -1,18 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:watch_my_cash_flow/app/services/localization_service.dart';
 import 'package:watch_my_cash_flow/app/services/supabase_service.dart';
+import 'package:watch_my_cash_flow/app/translations/app_translations.dart';
 import 'package:watch_my_cash_flow/main_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   // load .env
   await dotenv.load(fileName: ".env");
 
   final supabaseUrl = dotenv.env['SUPABASE_URL']!;
   final supabaseAnonKey = dotenv.env['SUPABASE_ANON_KEY']!;
   await SupabaseService().init(url: supabaseUrl, anonKey: supabaseAnonKey);
+
+  await initializeDateFormatting();
+
+  // Initialize localization service
+  await Get.putAsync(() => LocalizationService().init());
 
   runApp(const MyApp());
 }
@@ -24,7 +31,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      title: 'Flutter Demo',
+      translations: AppTranslations(),
+      fallbackLocale: const Locale('en', 'US'),
+      debugShowCheckedModeBanner: false,
       darkTheme: ThemeData(
         appBarTheme: AppBarTheme(
           backgroundColor: Color(0xFF181A1B),

@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:watch_my_cash_flow/app/services/date_service.dart';
 import 'package:watch_my_cash_flow/app/services/supabase_service.dart';
 // import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:watch_my_cash_flow/data/model/cash_flow_entry.dart';
@@ -70,7 +71,7 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       contentPadding: EdgeInsets.all(16),
-      title: const Text("Add Cash Flow"),
+      title: Text("app.addCashFlow".tr),
       content: SingleChildScrollView(
         child: Column(
           children: [
@@ -83,8 +84,8 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
                 VNDTextInputFormatter(),
               ],
               onTapOutside: (event) => FocusScope.of(context).unfocus(),
-              decoration: const InputDecoration(
-                labelText: "Amount",
+              decoration: InputDecoration(
+                labelText: "app.amount".tr,
                 prefixIcon: Icon(Icons.attach_money),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.all(Radius.circular(16)),
@@ -104,7 +105,7 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
             // Date
             Row(
               children: [
-                Text(DateFormat.yMMMd().format(selectedDate)),
+                Text(dateService.format(selectedDate, pattern: 'yMMMd')),
                 const Spacer(),
                 TextButton(
                   style: ButtonStyle(
@@ -121,7 +122,7 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
                     );
                     if (d != null) setState(() => selectedDate = d);
                   },
-                  child: const Text("Pick Date"),
+                  child: Text("app.pickDate".tr),
                 )
               ],
             ),
@@ -131,8 +132,8 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
             // Note
             TextField(
               controller: _noteController,
-              decoration: const InputDecoration(
-                labelText: "Note (optional)",
+              decoration: InputDecoration(
+                labelText: "app.note".tr,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.all(Radius.circular(16))
                 )
@@ -207,7 +208,7 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
 
         Get.back(result: entry);
       },
-      child: const Text("Save"),
+      child: Text("app.save".tr),
     );
   }
 
@@ -259,8 +260,8 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
               padding: EdgeInsets.zero,
               dropdownColor: Get.theme.dropdownMenuTheme.menuStyle?.backgroundColor?.resolve({}),
               initialValue: selectedCategory,
-              decoration: const InputDecoration(
-                labelText: "Category",
+              decoration: InputDecoration(
+                labelText: "app.category".tr,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.all(Radius.circular(16)),
                 )
@@ -277,8 +278,8 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
 
   Widget addNewCategoryField() {
     return TextField(
-      decoration: const InputDecoration(
-        labelText: "Add Category",
+      decoration: InputDecoration(
+        labelText: "app.category.add".tr,
         border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(16)))
       ),
       onSubmitted: (value) async {
@@ -368,6 +369,6 @@ Widget cancelButton(BuildContext context) {
       ),
     ),
     onPressed: () => Navigator.pop(context),
-    child: const Text("Cancel"),
+    child: Text("app.cancel".tr),
   );
 }

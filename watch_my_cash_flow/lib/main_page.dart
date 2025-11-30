@@ -1,12 +1,20 @@
 
 
+import 'package:country_flags/country_flags.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:watch_my_cash_flow/add_cash_flow_entry.dart';
+import 'package:watch_my_cash_flow/app/services/date_service.dart';
+import 'package:watch_my_cash_flow/app/services/localization_service.dart';
 import 'package:watch_my_cash_flow/data/model/cash_flow_entry.dart';
 import 'package:watch_my_cash_flow/utils/money_text_formatter.dart';
+
+enum Language { vn, us }
+const Map<Language, Locale> languageToLocale = {
+  Language.vn: Locale('vi', 'VN'),
+  Language.us: Locale('en', 'US'),
+};
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -19,6 +27,7 @@ class _MainPageState extends State<MainPage> {
   DateTime month = DateTime(DateTime.now().year, DateTime.now().month);
   bool isDarkMode = true;
   final PageController _pageController = PageController(initialPage: 5000);
+  final loc = Get.find<LocalizationService>();
 
   List<CashFlowEntry> cashFlowEntries = [];
   Map<DateTime, List<CashFlowEntry>> mDate2Entries = {};
@@ -114,22 +123,48 @@ class _MainPageState extends State<MainPage> {
   AppBar appBar() {
     return AppBar(
       toolbarHeight: 60,
-      title: Text(DateFormat('MMMM').format(month)), // Display month name
+      title: Text(dateService.monthLong(month)), // Display month name
       leading: totalAmount(),
       leadingWidth: 120,
-      actions: [ mode() ]
+      actions: [ languages(), mode() ]
     );
   }
 
   Widget totalAmount() {
     return Center(
-      child: Text("Total: ${formatter.format(total)}",
+      child: Text("${"app.total".tr}: ${formatter.format(total)}",
         style: TextStyle(
           fontWeight: FontWeight.w600,
           color: Get.theme.colorScheme.primary,
         ),
         textAlign: TextAlign.left,
       ).marginOnly(left: 4),
+    );
+  }
+
+  Widget languages() {
+    return SizedBox(
+      width: 38,
+      height: 28,
+      child: DropdownButton<String>(
+        padding: EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+        value: loc.currentCountryCode.toLowerCase(),
+        dropdownColor: Get.theme.dropdownMenuTheme.menuStyle?.backgroundColor?.resolve({}),
+        icon: SizedBox.shrink(),
+        items: Language.values.map((value) {
+          return DropdownMenuItem<String>(
+            value: value.name,
+            child: SizedBox(
+              width: 30,
+              height: 20,
+              child: CountryFlag.fromCountryCode(value.name),
+            )
+          );
+        }).toList(),
+        onChanged: (newValue) {
+          loc.changeLocale(languageToLocale[Language.values.byName(newValue!)]!);
+        }
+      )
     );
   }
 
@@ -207,27 +242,25 @@ class MonthCalendar extends StatelessWidget {
               height: 30,
               child: Center(
                 child: GridView.builder(
-                padding: EdgeInsets.zero,
-                itemCount: weekdays.length,
-                shrinkWrap: true,
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 7, // 7 days per row
-                  childAspectRatio: cellWidth / 30
-                ),
-                itemBuilder: (context, index) {
-                  final day = weekdays[index];
-
-                  return Center(
-                    child: Text(
-                      DateFormat.E().format(day),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: dayInMonthColor
-                    )
+                  padding: EdgeInsets.zero,
+                  itemCount: weekdays.length,
+                  shrinkWrap: true,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 7, // 7 days per row
+                    childAspectRatio: cellWidth / 30
                   ),
-                  );
-                },
-              ),
+                  itemBuilder: (context, index) {
+                    final day = weekdays[index];
+
+                    return Center(
+                      child: Text(
+                        dateService.dayShort(day),
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: dayInMonthColor)
+                      )
+                    );
+                  }
+                )
               )
             ),
             Expanded(child: GridView.builder(
