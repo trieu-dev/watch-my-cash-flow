@@ -1,6 +1,4 @@
 const Map<String, String> enUS = {
-  "hello": "Hello",
-  "welcome": "Welcome",
   "app.total": "Total",
   "app.amount": "Amount",
   "app.category": "Category",

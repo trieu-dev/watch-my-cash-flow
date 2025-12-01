@@ -15,7 +15,6 @@ class LocalizationService extends GetxService {
 
   Future<LocalizationService> init() async {
     final saved = await _loadSavedLocale();
-    print(saved);
     if (saved != null) {
       Get.updateLocale(saved);
     }
@@ -27,6 +26,9 @@ class LocalizationService extends GetxService {
 
   String get currentCountryCode =>
       Get.locale?.countryCode ?? fallbackLocale.countryCode ?? '';
+
+  Locale get currentLocale =>
+      Get.locale ?? fallbackLocale;
 
   /// Save locale to SharedPreferences
   Future<void> saveLocale(Locale locale) async {

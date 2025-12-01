@@ -6,6 +6,7 @@ import 'package:watch_my_cash_flow/app/services/localization_service.dart';
 import 'package:watch_my_cash_flow/app/services/supabase_service.dart';
 import 'package:watch_my_cash_flow/app/translations/app_translations.dart';
 import 'package:watch_my_cash_flow/main_page.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,7 +33,17 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       translations: AppTranslations(),
+      locale: LocalizationService().currentLocale,
       fallbackLocale: const Locale('en', 'US'),
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en'),
+        Locale('vi'),
+      ],
       debugShowCheckedModeBanner: false,
       darkTheme: ThemeData(
         appBarTheme: AppBarTheme(
@@ -47,10 +58,6 @@ class MyApp extends StatelessWidget {
           elevation: .2,
           shadowColor: Colors.black.withAlpha(20),
         ),
-        datePickerTheme: DatePickerThemeData(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          backgroundColor: Color(0xFF1F2123),
-        ),
         colorScheme: ColorScheme.dark(
           primary: const Color(0xFF2ED6A8),
           onPrimary: Colors.black,
@@ -58,6 +65,11 @@ class MyApp extends StatelessWidget {
           onSecondary: Colors.black,
           surface: const Color(0xFFE3E3E3),      // day in month text
           surfaceContainerHighest: const Color(0xFF777777), // day NOT in month text
+        ),
+        datePickerTheme: DatePickerThemeData(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          backgroundColor: Color(0xFF1F2123),
+          // locale: Locale('vi', 'VN'),
         ),
         dialogTheme: DialogThemeData(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -109,6 +121,11 @@ class MyApp extends StatelessWidget {
           surface: Colors.white,
           onSurface: const Color(0xFF111111),          // day in month text
           surfaceContainerHighest: const Color(0xFFAAAAAA),     // day NOT in month text
+        ),
+        datePickerTheme: DatePickerThemeData(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          backgroundColor: Color(0xFFFFFFFF),
+          // locale: LocalizationService().currentLocale,
         ),
         dialogTheme: DialogThemeData(
           backgroundColor: Color(0xFFFFFFFF),

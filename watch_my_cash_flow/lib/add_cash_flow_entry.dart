@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:watch_my_cash_flow/app/services/date_service.dart';
+import 'package:watch_my_cash_flow/app/services/localization_service.dart';
 import 'package:watch_my_cash_flow/app/services/supabase_service.dart';
-// import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:watch_my_cash_flow/data/model/cash_flow_entry.dart';
 import 'package:watch_my_cash_flow/data/model/category.dart';
 import 'package:flutter/services.dart';
@@ -25,6 +25,7 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
   Category? selectedCategory;
   DateTime selectedDate = DateTime.now();
   List<Category> categories = [];
+  final loc = Get.find<LocalizationService>();
 
   @override
   void initState() {
@@ -116,6 +117,7 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
                   onPressed: () async {
                     final d = await showDatePicker(
                       context: context,
+                      locale: loc.currentLocale,
                       firstDate: DateTime(2000),
                       lastDate: DateTime(2100),
                       initialDate: selectedDate,
