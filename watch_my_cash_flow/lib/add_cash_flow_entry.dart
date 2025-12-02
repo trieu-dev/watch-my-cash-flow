@@ -285,9 +285,14 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
         border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(16)))
       ),
       onSubmitted: (value) async {
-        await SupabaseService().client.from('categories').insert({
+        final data = await SupabaseService().client.from('categories').insert({
           'name': value,
-        });
+        }).select().single();
+
+        final newCategory = Category.fromMap(data);
+        categories.add(newCategory);
+        categories.sort((a, b) => a.name.compareTo(b.name));
+        setState(() { });
       },
       onTapOutside: (event) => FocusScope.of(context).unfocus(),
     );
