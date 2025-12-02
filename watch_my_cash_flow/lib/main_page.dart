@@ -130,7 +130,7 @@ class _MainPageState extends State<MainPage> {
 
   Widget totalAmount() {
     return Center(
-      child: Text("${"app.total".tr}: ${formatter.format(total)}",
+      child: Text("${"app.total".tr}: ${formatAmount(total)}",
         style: TextStyle(
           fontWeight: FontWeight.w600,
           color: Get.theme.colorScheme.primary,
@@ -312,7 +312,7 @@ class MonthCalendar extends StatelessWidget {
                             ),
                             padding: EdgeInsets.all(2),
                             child: Text(
-                              formatter.format(e.amount),
+                              formatAmount(e.amount),
                               style: TextStyle(
                                 fontSize: 12,
                                 height: 1,
