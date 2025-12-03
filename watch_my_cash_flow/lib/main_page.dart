@@ -8,10 +8,12 @@ import 'package:watch_my_cash_flow/app/services/localization_service.dart';
 import 'package:watch_my_cash_flow/data/model/cash_flow_entry.dart';
 import 'package:watch_my_cash_flow/utils/money_text_formatter.dart';
 
-enum Language { vn, us }
+enum Language { vn, us, cn, kr }
 const Map<Language, Locale> languageToLocale = {
   Language.vn: Locale('vi', 'VN'),
   Language.us: Locale('en', 'US'),
+  Language.cn: Locale('zh', 'CN'),
+  Language.kr: Locale('ko', 'KR'),
 };
 
 class MainPage extends StatefulWidget {

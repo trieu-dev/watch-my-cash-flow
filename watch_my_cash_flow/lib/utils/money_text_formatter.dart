@@ -28,14 +28,15 @@ class VNDTextInputFormatter extends TextInputFormatter {
 }
 
 String formatAmount(double amount) {
+  final loc = Get.find<LocalizationService>();
   final formattedAmount = formatter.format(amount);
-  if (Get.find<LocalizationService>().currentCountryCode == 'VN') {
-    return '$formattedAmount₫';
-  }
 
-  if (Get.find<LocalizationService>().currentCountryCode == 'US') {
-    return '\$$formattedAmount';
+  switch (loc.currentLanguageCode) {
+    case 'en': return '\$$formattedAmount';
+    case 'vi': return '$formattedAmount₫';
+    case 'zh': return '¥$formattedAmount';
+    case 'ko': return '₩$formattedAmount';
+    default:
+      return formattedAmount;
   }
-
-  return formattedAmount;
 }

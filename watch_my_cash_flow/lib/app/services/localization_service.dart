@@ -35,7 +35,7 @@ class LocalizationService extends GetxService {
       Get.locale ?? fallbackLocale;
 
   List<DateElement> getDateOrder() {
-    switch (currentLocale.languageCode) {
+    switch (currentLanguageCode) {
       case 'en':
         return [DateElement.month, DateElement.day, DateElement.year];
       case 'vi':
