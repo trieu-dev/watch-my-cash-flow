@@ -3,6 +3,10 @@ import 'dart:ui';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+enum DateElement {
+  day, month, year
+}
+
 class LocalizationService extends GetxService {
   static const _key = 'app_locale';
 
@@ -29,6 +33,19 @@ class LocalizationService extends GetxService {
 
   Locale get currentLocale =>
       Get.locale ?? fallbackLocale;
+
+  List<DateElement> getDateOrder() {
+    switch (currentLocale.languageCode) {
+      case 'en':
+        return [DateElement.month, DateElement.day, DateElement.year];
+      case 'vi':
+        return [DateElement.day, DateElement.month, DateElement.year];
+      case 'zh':
+        return [DateElement.year, DateElement.month, DateElement.day];
+      default:
+        return [DateElement.month, DateElement.day, DateElement.year];
+    }
+  }
 
   /// Save locale to SharedPreferences
   Future<void> saveLocale(Locale locale) async {

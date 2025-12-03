@@ -9,6 +9,7 @@ import 'package:watch_my_cash_flow/app/services/supabase_service.dart';
 import 'package:watch_my_cash_flow/data/model/cash_flow_entry.dart';
 import 'package:watch_my_cash_flow/data/model/category.dart';
 import 'package:flutter/services.dart';
+import 'package:watch_my_cash_flow/day_wheel_selector.dart';
 import 'package:watch_my_cash_flow/utils/money_text_formatter.dart';
 
 class AddCashFlowEntryDialog extends StatefulWidget {
@@ -100,6 +101,16 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
             categories.isEmpty
               ? addNewCategoryField()
               : buildCategoryDropdown(),
+
+            const SizedBox(height: 16),
+
+            FullDatePicker(
+              initialDate: DateTime.now(),
+                onDateChanged: (date) {
+                  print("Selected date: $date");
+                  setState(() => selectedDate = date);
+                },
+            ),
 
             const SizedBox(height: 16),
 

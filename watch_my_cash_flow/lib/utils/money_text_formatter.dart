@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
@@ -33,6 +32,10 @@ String formatAmount(double amount) {
   if (Get.find<LocalizationService>().currentCountryCode == 'VN') {
     return '$formattedAmount₫';
   }
+
+  if (Get.find<LocalizationService>().currentCountryCode == 'US') {
+    return '\$$formattedAmount';
+  }
+
   return formattedAmount;
 }
-// ₫

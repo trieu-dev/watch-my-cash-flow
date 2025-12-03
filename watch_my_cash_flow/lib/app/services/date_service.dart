@@ -22,9 +22,15 @@ class DateService {
     return DateFormat.EEEE(locale).format(date);
   }
 
-  /// Full day name (Monday, Tuesday…)
+  /// Full month name (November, December)
   String monthLong(DateTime date) {
     final locale = Get.locale?.toString() ?? 'en_US';
     return DateFormat.MMMM(locale).format(date);
+  }
+
+  /// 1/2025
+  String monthYearShort(DateTime date) {
+    final locale = Get.locale?.toString() ?? 'en_US';
+    return DateFormat.yM(locale).format(date);
   }
 }

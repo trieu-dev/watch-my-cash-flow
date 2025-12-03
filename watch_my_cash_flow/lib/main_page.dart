@@ -121,7 +121,7 @@ class _MainPageState extends State<MainPage> {
   AppBar appBar() {
     return AppBar(
       toolbarHeight: 60,
-      title: Text(dateService.monthLong(month)), // Display month name
+      title: Text(month.year == DateTime.now().year ? dateService.monthLong(month) : dateService.monthYearShort(month)), // Display month name
       leading: totalAmount(),
       leadingWidth: 120,
       actions: [ languages(), mode() ]
