@@ -88,7 +88,7 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
               onTapOutside: (event) => FocusScope.of(context).unfocus(),
               decoration: InputDecoration(
                 labelText: "app.amount".tr,
-                prefixIcon: Icon(Icons.attach_money),
+                prefixIcon: Icon(Icons.payments_outlined),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.all(Radius.circular(16)),
                 )
@@ -106,10 +106,7 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
 
             FullDatePicker(
               initialDate: DateTime.now(),
-                onDateChanged: (date) {
-                  print("Selected date: $date");
-                  setState(() => selectedDate = date);
-                },
+                onDateChanged: (date) { setState(() => selectedDate = date); },
             ),
 
             const SizedBox(height: 16),
