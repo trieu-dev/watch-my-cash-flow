@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:watch_my_cash_flow/add_cash_flow_entry.dart';
 import 'package:watch_my_cash_flow/app/services/date_service.dart';
 import 'package:watch_my_cash_flow/app/services/localization_service.dart';
+import 'package:watch_my_cash_flow/calendar/calendar_page.dart';
 import 'package:watch_my_cash_flow/data/model/cash_flow_entry.dart';
 import 'package:watch_my_cash_flow/utils/money_text_formatter.dart';
 
@@ -100,21 +101,23 @@ class _MainPageState extends State<MainPage> {
     return Scaffold(
       appBar: appBar(),
       body: SafeArea(
-        child: PageView.builder(
-          onPageChanged: (value) {
-            setState(() {
-              month = DateTime(
-                DateTime.now().year,
-                DateTime.now().month + (value - 5000),
-              );
-            });
-          },
-          controller: _pageController,
-          itemBuilder: (context, index) {
-            final month = monthFromIndex(index);
-            return MonthCalendar(month: month, mDate2Entries: mDate2Entries, onAfterUpdated: handleAfterUpdated); // your existing month grid
-          },
-        )
+        child: 
+        CalendarPage()
+        // PageView.builder(
+        //   onPageChanged: (value) {
+        //     setState(() {
+        //       month = DateTime(
+        //         DateTime.now().year,
+        //         DateTime.now().month + (value - 5000),
+        //       );
+        //     });
+        //   },
+        //   controller: _pageController,
+        //   itemBuilder: (context, index) {
+        //     final month = monthFromIndex(index);
+        //     return MonthCalendar(month: month, mDate2Entries: mDate2Entries, onAfterUpdated: handleAfterUpdated); // your existing month grid
+        //   },
+        // )
       ),
       floatingActionButton: addEntryButton(),
     );
