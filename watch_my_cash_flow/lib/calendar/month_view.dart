@@ -15,7 +15,7 @@ class MonthPager extends GetView<CalendarController> {
     return PageView.builder(
       controller: controller.monthPageCtrl,
       onPageChanged: (pageIndex) {
-        final diff = pageIndex - controller.centerPage;
+        final diff = pageIndex - controller.centerMonthPage;
         controller.selectedDate.value =
             addMonths(controller.selectedDate.value, diff).dateOnly;
       },
@@ -157,7 +157,7 @@ class MonthCalendar extends GetView<CalendarController> {
                                   child: Text(
                                     formatAmount(e.amount),
                                     style: TextStyle(
-                                      fontSize: 12,
+                                      fontSize: e.amount < 100000 ? 12 : 11,
                                       height: 1,
                                       color: Get.theme.colorScheme.primary,
                                     ),
