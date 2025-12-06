@@ -5,8 +5,8 @@ import 'package:watch_my_cash_flow/calendar/calendar_controller.dart';
 import 'package:watch_my_cash_flow/calendar/month_view.dart';
 import 'package:watch_my_cash_flow/calendar/week_view.dart';
 
-class CalendarPage extends StatelessWidget {
-  final controller = Get.put(CalendarController());
+class CalendarPage extends GetView<CalendarController> {
+  const CalendarPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -31,16 +31,14 @@ class CalendarPage extends StatelessWidget {
       ),
 
       // The animated switcher between month <-> week
-      body: Obx(() {
-        return AnimatedSwitcher(
-          duration: Duration(milliseconds: 280),
-          transitionBuilder: (child, anim) =>
-              FadeTransition(opacity: anim, child: child),
-          child: controller.viewMode.value == CalendarViewMode.month
-              ? MonthPager()
-              : WeekPager(),
-        );
-      }),
+      body: AnimatedSwitcher(
+        duration: Duration(milliseconds: 280),
+        transitionBuilder: (child, anim) =>
+            FadeTransition(opacity: anim, child: child),
+        child: controller.viewMode.value == CalendarViewMode.month
+            ? MonthPager()
+            : WeekPager(),
+      )
     );
   }
 }

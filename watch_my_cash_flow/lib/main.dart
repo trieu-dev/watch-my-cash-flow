@@ -5,6 +5,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:watch_my_cash_flow/app/services/localization_service.dart';
 import 'package:watch_my_cash_flow/app/services/supabase_service.dart';
 import 'package:watch_my_cash_flow/app/translations/app_translations.dart';
+import 'package:watch_my_cash_flow/calendar/calendar_controller.dart';
 import 'package:watch_my_cash_flow/main_page.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
@@ -160,6 +161,9 @@ class MyApp extends StatelessWidget {
       ),
       themeMode: ThemeMode.dark,
       home: MainPage(),
+      initialBinding: BindingsBuilder(() {
+        Get.put(CalendarController());
+      }),
     );
   }
 }
