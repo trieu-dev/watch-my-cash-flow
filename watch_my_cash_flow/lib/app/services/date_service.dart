@@ -33,4 +33,16 @@ class DateService {
     final locale = Get.locale?.toString() ?? 'en_US';
     return DateFormat.yM(locale).format(date);
   }
+
+  /// 1, 2, ..., 31
+  String dayOfMonthShort(DateTime date) {
+    final locale = Get.locale?.toString() ?? 'en_US';
+    return DateFormat.d(locale).format(date);
+  }
+
+  /// 1/1, 2/2, ..., 31/12
+  String dayAndMonthShort(DateTime date) {
+    final locale = Get.locale?.toString() ?? 'en_US';
+    return DateFormat.Md(locale).format(date);
+  }
 }

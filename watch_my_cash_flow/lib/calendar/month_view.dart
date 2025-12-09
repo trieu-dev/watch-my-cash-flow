@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:watch_my_cash_flow/add_cash_flow_entry.dart';
 import 'package:watch_my_cash_flow/app/services/date_service.dart';
 import 'package:watch_my_cash_flow/calendar/calendar_controller.dart';
-import 'package:watch_my_cash_flow/calendar/date_utils.dart';
 import 'package:watch_my_cash_flow/data/model/cash_flow_entry.dart';
 import 'package:watch_my_cash_flow/utils/money_text_formatter.dart';
 
@@ -19,6 +18,13 @@ class MonthPager extends GetView<CalendarController> {
         final month = monthFromIndex(index);
         return MonthCalendar(month: month); // your existing month grid
       },
+    );
+  }
+
+  DateTime monthFromIndex(int pageIndex) {
+    return DateTime(
+      controller.anchoredDate.year,
+      controller.anchoredDate.month + (pageIndex - 5000),
     );
   }
 }
@@ -212,71 +218,4 @@ List<DateTime> getCalendarDays(DateTime month) {
 
   // 4. Generate 42 days for a 6×7 grid
   return List.generate(42, (i) => firstDisplayDate.add(Duration(days: i)));
-}
-
-class MonthView extends StatelessWidget {
-  final DateTime displayMonth;
-  final DateTime selectedDate;
-  final Function(DateTime) onSelect;
-
-  const MonthView({
-    required this.displayMonth,
-    required this.selectedDate,
-    required this.onSelect,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final days = getMonthDays(displayMonth);
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    return GridView.builder(
-      padding: EdgeInsets.zero,
-      gridDelegate:
-          SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 7),
-      itemCount: days.length,
-      itemBuilder: (_, i) {
-        final d = days[i];
-        final isToday = d.dateOnly == DateTime.now().dateOnly;
-        final isSelected = d.dateOnly == selectedDate.dateOnly;
-        final inMonth = d.month == displayMonth.month;
-
-        Color textColor = inMonth
-            ? (isDark ? Colors.white : Colors.black)
-            : (isDark ? Colors.white30 : Colors.black38);
-
-        return GestureDetector(
-          onTap: () => onSelect(d),
-          child: AnimatedContainer(
-            duration: Duration(milliseconds: 180),
-            margin: EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? (isDark ? Colors.blueAccent : Colors.blue)
-                  : isToday
-                      ? (isDark ? Colors.blueGrey : Colors.blue.shade100)
-                      : Colors.transparent,
-              shape: BoxShape.circle,
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              "${d.day}",
-              style: TextStyle(
-                color: textColor,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
-DateTime monthFromIndex(int pageIndex) {
-  return DateTime(
-    DateTime.now().year,
-    DateTime.now().month + (pageIndex - 5000),
-  );
 }

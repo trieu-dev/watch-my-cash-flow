@@ -42,7 +42,7 @@ class CalendarController extends GetxController {
 
   void handleMonthPageViewChanged(int pageIndex) {
     final diff = pageIndex - centerMonthPage;
-    updateSelectedDate(addMonths(DateTime.now(), diff).dateOnly);
+    updateSelectedDate(addMonths(anchoredDate, diff).dateOnly);
   }
 
   void handleWeekPageViewChanged(int pageIndex) {
@@ -50,7 +50,7 @@ class CalendarController extends GetxController {
     final weekDate = anchoredDate.add(Duration(days: diff * 7));
     final days = getWeekDays(weekDate);
 
-    final isNewMonth = days.every((o) => o.month != anchoredDate.month);
+    final isNewMonth = days.every((o) => o.month != currentDate.month);
     if (isNewMonth) {
       final newDay = addMonths(anchoredDate, days[0].month - anchoredDate.month).dateOnly;
       print('Calendar controller ::: $newDay >>>');
@@ -74,7 +74,7 @@ class CalendarController extends GetxController {
     ever(viewMode, (mode) {
       print('Calendar view mode changed: $mode');
       _anchoredDate.value = currentDate;
-      _anchoredDate.value = currentDate;
+      // _anchoredDate.value = currentDate;
     });
   }
 

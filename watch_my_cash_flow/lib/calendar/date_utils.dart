@@ -38,6 +38,10 @@ List<DateTime> getMonthDays(DateTime date) {
 }
 
 List<DateTime> getWeekDays(DateTime date) {
-  final sunday = date.subtract(Duration(days: date.weekday));
+  // DateTime.weekday: Monday=1 ... Sunday=7
+  int daysFromSunday = date.weekday % 7; 
+  DateTime sunday = date.subtract(Duration(days: daysFromSunday));
+
+  // Return all 7 days starting from Sunday
   return List.generate(7, (i) => sunday.add(Duration(days: i)));
 }

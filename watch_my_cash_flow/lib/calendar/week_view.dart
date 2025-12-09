@@ -13,31 +13,24 @@ class WeekPager extends GetView<CalendarController> {
       controller: controller.weekPageCtrl,
       onPageChanged: controller.handleWeekPageViewChanged,
       itemBuilder: (_, pageIndex) {
-        print('Building week page index: ${controller.anchoredDate} :: $pageIndex >>> ${controller.centerWeekPage}');
         final diff = pageIndex - controller.centerWeekPage;
-        final weekDate =
-          controller.anchoredDate.add(Duration(days: diff * 7));
-          // diff < 0 
-          // ? controller.selectedDate.value.subtract(Duration(days: diff.abs() * 7))
-          // : controller.selectedDate.value.add(Duration(days: diff * 7));
-
+        final weekDate = controller.anchoredDate.add(Duration(days: diff * 7));
         return WeekView(
           weekDate: weekDate,
           selectedDate: controller.anchoredDate,
           onSelect: (d) { },
-          // onSelect: (d) => controller.selectedDate.value = d.dateOnly,
         );
       },
     );
   }
 }
 
-class WeekView extends StatelessWidget {
+class WeekView extends GetView<CalendarController> {
   final DateTime weekDate;
   final DateTime selectedDate;
   final Function(DateTime) onSelect;
 
-  const WeekView({
+  const WeekView({super.key, 
     required this.weekDate,
     required this.selectedDate,
     required this.onSelect,
@@ -46,16 +39,11 @@ class WeekView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final days = getWeekDays(weekDate);
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
     return Column(
       children: days.map((d) {
         final isToday = d.dateOnly == DateTime.now().dateOnly;
-        final isSelected = d.dateOnly == selectedDate.dateOnly;
         final dayInMonthColor = Theme.of(context).colorScheme.onSurface;
-        final dayNotInMonthColor = Theme.of(context).colorScheme.surfaceContainerHighest;
-        final isCurrentMonth = d.month == DateTime.now().month;
         
         return Expanded(
           child: GestureDetector(
@@ -64,15 +52,6 @@ class WeekView extends StatelessWidget {
               duration: Duration(milliseconds: 180),
               margin: EdgeInsets.all(4),
               alignment: Alignment.center,
-              // decoration: BoxDecoration(
-              //   color: isSelected
-              //       ? (isDark ? Colors.blueAccent : Colors.blue)
-              //       : isToday
-              //           ? (isDark ? Colors.blueGrey : Colors.blue.shade100)
-              //           : Colors.transparent,
-              //   shape: BoxShape.circle,
-              // ),
-              // height: 58,
               child: Card(
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   color: isToday
@@ -90,15 +69,17 @@ class WeekView extends StatelessWidget {
                               textAlign: TextAlign.center,
                               style: TextStyle(fontSize: 16, color: isToday ? Get.theme.colorScheme.primary : dayInMonthColor)
                             ),
-                            Text(
-                              "${d.day}",
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: isToday ? Get.theme.colorScheme.primary : dayInMonthColor,
-                                fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
-                                fontSize: 16
-                              ),
-                            ),
+                            Obx(() {
+                              return Text(
+                                d.month == controller.currentDate.month ? dateService.dayOfMonthShort(d) : dateService.dayAndMonthShort(d),
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: isToday ? Get.theme.colorScheme.primary : dayInMonthColor,
+                                  fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
+                                  fontSize: 16
+                                ),
+                              );
+                            })
                           ],
                         ),
                       ),
