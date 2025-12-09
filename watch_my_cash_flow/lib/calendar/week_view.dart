@@ -10,21 +10,22 @@ class WeekPager extends GetView<CalendarController> {
   @override
   Widget build(BuildContext context) {
     return PageView.builder(
-      controller: PageController(initialPage: controller.centerPage),
-      onPageChanged: (pageIndex) {
-        final diff = pageIndex - controller.centerPage;
-        controller.selectedDate.value =
-            controller.selectedDate.value.add(Duration(days: diff * 7));
-      },
+      controller: controller.weekPageCtrl,
+      onPageChanged: controller.handleWeekPageViewChanged,
       itemBuilder: (_, pageIndex) {
-        final diff = pageIndex - controller.centerPage;
+        print('Building week page index: ${controller.anchoredDate} :: $pageIndex >>> ${controller.centerWeekPage}');
+        final diff = pageIndex - controller.centerWeekPage;
         final weekDate =
-            controller.selectedDate.value.add(Duration(days: diff * 7));
+          controller.anchoredDate.add(Duration(days: diff * 7));
+          // diff < 0 
+          // ? controller.selectedDate.value.subtract(Duration(days: diff.abs() * 7))
+          // : controller.selectedDate.value.add(Duration(days: diff * 7));
 
         return WeekView(
           weekDate: weekDate,
-          selectedDate: controller.selectedDate.value,
-          onSelect: (d) => controller.selectedDate.value = d.dateOnly,
+          selectedDate: controller.anchoredDate,
+          onSelect: (d) { },
+          // onSelect: (d) => controller.selectedDate.value = d.dateOnly,
         );
       },
     );

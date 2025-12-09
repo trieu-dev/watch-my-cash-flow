@@ -7,11 +7,17 @@ import 'package:watch_my_cash_flow/data/model/cash_flow_entry.dart';
 enum CalendarViewMode { month, week }
 
 class CalendarController extends GetxController {
-  var selectedDate = DateTime.now().dateOnly.obs;
+  final _anchoredDate = DateTime.now().dateOnly.obs;
+  DateTime get anchoredDate => _anchoredDate.value;
+
+  final _currentDate = DateTime.now().dateOnly.obs;
+  DateTime get currentDate => _currentDate.value;
+
   var viewMode = CalendarViewMode.month.obs;
 
   /// Used for PageView initial index
-  final int centerPage = 5000;
+  final int centerMonthPage = 5000;
+  final int centerWeekPage = 5000;
 
   DateTime month = DateTime(DateTime.now().year, DateTime.now().month);
   bool isDarkMode = true;
@@ -34,10 +40,42 @@ class CalendarController extends GetxController {
     return total;
   }
 
+  void handleMonthPageViewChanged(int pageIndex) {
+    final diff = pageIndex - centerMonthPage;
+    updateSelectedDate(addMonths(DateTime.now(), diff).dateOnly);
+  }
+
+  void handleWeekPageViewChanged(int pageIndex) {
+    final diff = pageIndex - centerWeekPage;
+    final weekDate = anchoredDate.add(Duration(days: diff * 7));
+    final days = getWeekDays(weekDate);
+
+    final isNewMonth = days.every((o) => o.month != anchoredDate.month);
+    if (isNewMonth) {
+      final newDay = addMonths(anchoredDate, days[0].month - anchoredDate.month).dateOnly;
+      print('Calendar controller ::: $newDay >>>');
+      _currentDate.value = newDay;
+    }
+  }
+
+  void updateSelectedDate(DateTime date) {
+    _currentDate.value = date.dateOnly;
+  }
+
+  void handleMonthChanged() {
+    
+  }
+
   @override
   void onInit() {
     init();
     super.onInit();
+
+    ever(viewMode, (mode) {
+      print('Calendar view mode changed: $mode');
+      _anchoredDate.value = currentDate;
+      _anchoredDate.value = currentDate;
+    });
   }
 
   Future init() async {

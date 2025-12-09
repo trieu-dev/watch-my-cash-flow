@@ -13,7 +13,7 @@ class CalendarPage extends GetView<CalendarController> {
     return Scaffold(
       appBar: AppBar(
         title: Obx(() => Text(
-              DateFormat.yMMMM().format(controller.selectedDate.value),
+              DateFormat.yMMMM().format(controller.currentDate),
             )),
         actions: [
           Obx(() {
@@ -31,14 +31,16 @@ class CalendarPage extends GetView<CalendarController> {
       ),
 
       // The animated switcher between month <-> week
-      body: AnimatedSwitcher(
-        duration: Duration(milliseconds: 280),
-        transitionBuilder: (child, anim) =>
-            FadeTransition(opacity: anim, child: child),
-        child: controller.viewMode.value == CalendarViewMode.month
-            ? MonthPager()
-            : WeekPager(),
-      )
+      body: Obx(() {
+        return AnimatedSwitcher(
+          duration: Duration(milliseconds: 280),
+          transitionBuilder: (child, anim) =>
+              FadeTransition(opacity: anim, child: child),
+          child: controller.viewMode.value == CalendarViewMode.month
+              ? MonthPager()
+              : WeekPager(),
+        );
+      }),
     );
   }
 }

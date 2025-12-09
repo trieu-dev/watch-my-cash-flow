@@ -14,35 +14,12 @@ class MonthPager extends GetView<CalendarController> {
   Widget build(BuildContext context) {
     return PageView.builder(
       controller: controller.monthPageCtrl,
-      onPageChanged: (pageIndex) {
-        final diff = pageIndex - controller.centerMonthPage;
-        controller.selectedDate.value =
-            addMonths(controller.selectedDate.value, diff).dateOnly;
-      },
+      onPageChanged: controller.handleMonthPageViewChanged,
       itemBuilder: (context, index) {
         final month = monthFromIndex(index);
         return MonthCalendar(month: month); // your existing month grid
       },
     );
-    // return PageView.builder(
-    //   controller: PageController(initialPage: controller.centerPage),
-    //   onPageChanged: (pageIndex) {
-    //     final diff = pageIndex - controller.centerPage;
-    //     controller.selectedDate.value =
-    //         addMonths(controller.selectedDate.value, diff).dateOnly;
-    //   },
-    //   itemBuilder: (_, pageIndex) {
-    //     final diff = pageIndex - controller.centerPage;
-    //     final monthDate =
-    //         addMonths(controller.selectedDate.value, diff).dateOnly;
-
-    //     return MonthView(
-    //       displayMonth: monthDate,
-    //       selectedDate: controller.selectedDate.value,
-    //       onSelect: (d) => controller.selectedDate.value = d,
-    //     );
-    //   },
-    // );
   }
 }
 
@@ -132,42 +109,7 @@ class MonthCalendar extends GetView<CalendarController> {
                           fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
                         ),
                       ),
-                      Obx(() {
-                        final entries = (controller.mDate2Entries[day]??[]);
-                        return Column(
-                          children: [
-                            ...entries.map((e) {
-                              return GestureDetector(
-                                onTap: () async {
-                                  final result = await showDialog<CashFlowEntry>(
-                                    context: context,
-                                    builder: (context) => AddCashFlowEntryDialog(entry: e),
-                                  );
-                                  if (result != null) controller.handleAfterUpdated(e.date, result);
-                                },
-                                child: Container(
-                                  width: double.infinity,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(4),
-                                    border: Border.all(
-                                      color: Get.theme.colorScheme.primary,
-                                    ),
-                                  ),
-                                  padding: EdgeInsets.all(2),
-                                  child: Text(
-                                    formatAmount(e.amount),
-                                    style: TextStyle(
-                                      fontSize: e.amount < 100000 ? 12 : 11,
-                                      height: 1,
-                                      color: Get.theme.colorScheme.primary,
-                                    ),
-                                  ),
-                                ),
-                              ).marginOnly(top: 2);
-                            }),
-                          ],
-                        );
-                      })
+                      EntryList(day: day)
                     ],
                   )
                 );
@@ -180,6 +122,80 @@ class MonthCalendar extends GetView<CalendarController> {
 
   bool isSameDate(DateTime a, DateTime b) {
     return a.year == b.year && a.month == b.month && a.day == b.day;
+  }
+}
+
+class EntryList extends GetView<CalendarController> {
+  final DateTime day;
+  const EntryList({super.key, required this.day});
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final entries = (controller.mDate2Entries[day]??[]);
+      final items = entries.length > 3 ? entries.take(3) : entries;
+      final isLimitExceeded = entries.length > 3;
+      return Column(
+        children: [
+          ...items.map((e) => clickableItem(e, context)),
+          isLimitExceeded ? moreItem() : SizedBox.shrink(),
+        ],
+      );
+    });
+  }
+
+  Widget clickableItem(CashFlowEntry item, BuildContext context) {
+    return GestureDetector(
+      onTap: () async {
+        final result = await showDialog<CashFlowEntry>(
+          context: context,
+          builder: (context) => AddCashFlowEntryDialog(entry: item),
+        );
+        if (result != null) controller.handleAfterUpdated(item.date, result);
+      },
+      child: amountItem(item)
+    );
+  }
+
+  Widget amountItem(CashFlowEntry item) {
+    return baseItem(
+      child: Text(
+        formatAmount(item.amount),
+        style: TextStyle(
+          fontSize: item.amount < 100000 ? 12 : 11,
+          height: 1,
+          color: Get.theme.colorScheme.primary,
+        ),
+      ),
+    );
+  }
+
+  Widget moreItem() {
+    return baseItem(
+      child: Text(
+        '...',
+        style: TextStyle(
+          fontSize: 12,
+          height: 1,
+          color: Get.theme.colorScheme.primary,
+        ),
+        textAlign: TextAlign.center,
+      ),
+    );
+  }
+  
+  Widget baseItem({required Widget child}) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(
+          color: Get.theme.colorScheme.primary,
+        ),
+      ),
+      padding: EdgeInsets.all(2),
+      child: child
+    ).marginOnly(top: 2);
   }
 }
 

@@ -67,8 +67,8 @@ class _MainPageState extends State<MainPage> {
   AppBar appBar() {
     return AppBar(
       toolbarHeight: 60,
-      title: Text(month.year == DateTime.now().year ? dateService.monthLong(month) : dateService.monthYearShort(month)), // Display month name
-      leading: totalAmount(),
+      title: Obx(() => Text(controller.currentDate.year == DateTime.now().year ? dateService.monthLong(controller.currentDate) : dateService.monthYearShort(controller.currentDate))), // Display month name
+      leading: Obx(() => totalAmount()),
       leadingWidth: 120,
       actions: [ languages(), mode() ]
     );
