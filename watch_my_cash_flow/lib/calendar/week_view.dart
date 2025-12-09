@@ -50,7 +50,7 @@ class WeekView extends GetView<CalendarController> {
             onTap: () => onSelect(d),
             child: AnimatedContainer(
               duration: Duration(milliseconds: 180),
-              margin: EdgeInsets.all(4),
+              margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
               alignment: Alignment.center,
               child: Card(
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
