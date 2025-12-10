@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:watch_my_cash_flow/add_cash_flow_entry.dart';
 import 'package:watch_my_cash_flow/app/services/date_service.dart';
 import 'package:watch_my_cash_flow/calendar/calendar_controller.dart';
 import 'package:watch_my_cash_flow/calendar/date_utils.dart';
+import 'package:watch_my_cash_flow/data/model/cash_flow_entry.dart';
+import 'package:watch_my_cash_flow/utils/money_text_formatter.dart';
 
 class WeekPager extends GetView<CalendarController> {
   const WeekPager({super.key});
@@ -83,40 +86,7 @@ class WeekView extends GetView<CalendarController> {
                           ],
                         ),
                       ),
-                      Expanded(child: Column(
-                        children: [
-                          SizedBox()
-                        ],
-                      ))
-                      // ...entries.map((e) {
-                      //   return GestureDetector(
-                      //     onTap: () async {
-                      //       final result = await showDialog<CashFlowEntry>(
-                      //         context: context,
-                      //         builder: (context) => AddCashFlowEntryDialog(entry: e),
-                      //       );
-                      //       if (result != null) onAfterUpdated(e.date, result);
-                      //     },
-                      //     child: Container(
-                      //       width: double.infinity,
-                      //       decoration: BoxDecoration(
-                      //         borderRadius: BorderRadius.circular(4),
-                      //         border: Border.all(
-                      //           color: Get.theme.colorScheme.primary,
-                      //         ),
-                      //       ),
-                      //       padding: EdgeInsets.all(2),
-                      //       child: Text(
-                      //         formatAmount(e.amount),
-                      //         style: TextStyle(
-                      //           fontSize: 12,
-                      //           height: 1,
-                      //           color: Get.theme.colorScheme.primary,
-                      //         ),
-                      //       ),
-                      //     ),
-                      //   ).marginOnly(top: 2);
-                      // }),
+                      Expanded(child: EntryList(day: d))
                     ],
                   ),
                 )
@@ -125,5 +95,73 @@ class WeekView extends GetView<CalendarController> {
         );
       }).toList(),
     );
+  }
+}
+
+class EntryList extends GetView<CalendarController> {
+  final DateTime day;
+  const EntryList({super.key, required this.day});
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final entries = (controller.mDate2Entries[day]??[]);
+      return Padding(
+        padding: EdgeInsetsGeometry.all(2),
+        child: Column(
+          children: [
+            Expanded(child: ListView.separated(
+              itemBuilder:(context, index) {
+                return clickableItem(entries.elementAt(index), context);
+              },
+              separatorBuilder:(context, index) {
+                return SizedBox(height: 2);
+              },
+              itemCount: entries.length
+            ))
+          ],
+        ),
+      );
+    });
+  }
+
+  Widget clickableItem(CashFlowEntry item, BuildContext context) {
+    return GestureDetector(
+      onTap: () async {
+        final result = await showDialog<CashFlowEntry>(
+          context: context,
+          builder: (context) => AddCashFlowEntryDialog(entry: item),
+        );
+        if (result != null) controller.handleAfterUpdated(item.date, result);
+      },
+      child: amountItem(item)
+    );
+  }
+
+  Widget amountItem(CashFlowEntry item) {
+    return baseItem(
+      child: Text(
+        formatAmount(item.amount),
+        style: TextStyle(
+          fontSize: item.amount < 100000 ? 12 : 11,
+          height: 1,
+          color: Get.theme.colorScheme.primary,
+        ),
+      ),
+    );
+  }
+  
+  Widget baseItem({required Widget child}) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(
+          color: Get.theme.colorScheme.primary,
+        ),
+      ),
+      padding: EdgeInsets.all(2),
+      child: child
+    ).marginOnly(top: 2);
   }
 }
