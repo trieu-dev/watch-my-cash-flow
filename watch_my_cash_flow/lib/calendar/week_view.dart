@@ -5,7 +5,6 @@ import 'package:watch_my_cash_flow/app/services/date_service.dart';
 import 'package:watch_my_cash_flow/calendar/calendar_controller.dart';
 import 'package:watch_my_cash_flow/calendar/date_utils.dart';
 import 'package:watch_my_cash_flow/data/model/cash_flow_entry.dart';
-import 'package:watch_my_cash_flow/utils/money_text_formatter.dart';
 
 class WeekPager extends GetView<CalendarController> {
   const WeekPager({super.key});
@@ -141,7 +140,7 @@ class EntryList extends GetView<CalendarController> {
   Widget amountItem(CashFlowEntry item) {
     return baseItem(
       child: Text(
-        formatAmount(item.amount),
+        item.amountAndNote,
         style: TextStyle(
           fontSize: item.amount < 100000 ? 12 : 11,
           height: 1,

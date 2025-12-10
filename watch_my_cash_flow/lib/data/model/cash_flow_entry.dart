@@ -1,3 +1,5 @@
+import 'package:watch_my_cash_flow/utils/money_text_formatter.dart';
+
 class CashFlowEntry {
   final BigInt id;
   final DateTime date;
@@ -14,6 +16,13 @@ class CashFlowEntry {
   });
 
   DateTime get dateOnly => DateTime(date.year, date.month, date.day);
+  String get amountAndNote {
+    if (note == null || note!.isEmpty) {
+      return formatAmount(amount);
+    } else {
+      return '${formatAmount(amount)} - $note';
+    }
+  }
 
   CashFlowEntry copyWith({
     DateTime? date,
