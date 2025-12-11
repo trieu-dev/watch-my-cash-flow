@@ -9,13 +9,14 @@ import 'package:watch_my_cash_flow/calendar/calendar_page.dart';
 import 'package:watch_my_cash_flow/data/model/cash_flow_entry.dart';
 import 'package:watch_my_cash_flow/utils/money_text_formatter.dart';
 
-enum Language { vn, us, cn, kr, jp }
+enum Language { vn, us, cn, kr, jp, th }
 const Map<Language, Locale> languageToLocale = {
   Language.vn: Locale('vi', 'VN'),
   Language.us: Locale('en', 'US'),
   Language.cn: Locale('zh', 'CN'),
   Language.kr: Locale('ko', 'KR'),
   Language.jp: Locale('ja', 'JP'),
+  Language.th: Locale('th', 'TH'),
 };
 
 class MainPage extends StatefulWidget {
