@@ -37,6 +37,7 @@ String formatAmount(double amount) {
     case 'zh': return '¥$formattedAmount';
     case 'ko': return '₩$formattedAmount';
     case 'ja': return '¥$formattedAmount';
+    case 'th': return '$formattedAmount฿';
     default:
       return formattedAmount;
   }
