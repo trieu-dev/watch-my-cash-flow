@@ -69,7 +69,11 @@ class WeekView extends GetView<CalendarController> {
                             Text(
                               dateService.dayShort(d),
                               textAlign: TextAlign.center,
-                              style: TextStyle(fontSize: 16, color: isToday ? Get.theme.colorScheme.primary : dayInMonthColor)
+                              style: TextStyle(
+                                color: isToday ? Get.theme.colorScheme.primary : dayInMonthColor,
+                                fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
+                                fontSize: 16,
+                              )
                             ),
                             Obx(() {
                               return Text(
