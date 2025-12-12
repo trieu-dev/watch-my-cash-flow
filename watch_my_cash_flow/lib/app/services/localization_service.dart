@@ -38,8 +38,11 @@ class LocalizationService extends GetxService {
     switch (currentLanguageCode) {
       case 'en':
         return [DateElement.month, DateElement.day, DateElement.year];
+      case 'th':
       case 'vi':
         return [DateElement.day, DateElement.month, DateElement.year];
+      case 'ja':
+      case 'ko':
       case 'zh':
         return [DateElement.year, DateElement.month, DateElement.day];
       default:
