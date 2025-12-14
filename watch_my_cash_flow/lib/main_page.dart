@@ -129,9 +129,11 @@ class _MainPageState extends State<MainPage> {
   Widget addEntryButton() {
     return FloatingActionButton(
       onPressed: () async {
-        final result = await showDialog<CashFlowEntry>(
+        final result = await showGeneralDialog<CashFlowEntry>(
           context: context,
-          builder: (context) => AddCashFlowEntryDialog(),
+          pageBuilder: (context, animation, secondaryAnimation) {
+            return AddCashFlowEntryDialog();
+          },
         );
 
         controller.handleSave(result);

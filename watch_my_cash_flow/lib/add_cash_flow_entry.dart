@@ -21,8 +21,9 @@ class AddCashFlowEntryDialog extends StatefulWidget {
 }
 
 class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
-  final _amountController = TextEditingController();
-  final _noteController = TextEditingController();
+  final TextEditingController _amountController = TextEditingController();
+  final FocusNode _amountFocus = FocusNode();
+  final TextEditingController _noteController = TextEditingController();
   Category? selectedCategory;
   DateTime selectedDate = DateTime.now();
   List<Category> categories = [];
@@ -38,6 +39,8 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
       selectedDate = widget.entry!.date;
     }
     super.initState();
+
+    _amountFocus.addListener(() { setState(() { }); });
   }
 
   Future getCategories() async {
@@ -70,6 +73,18 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
 
   @override
   Widget build(BuildContext context) {
+    return SafeArea(child: Stack(
+      children: [
+        body(),
+        Positioned(
+          bottom: 0,
+          child: amountSuggestion(),
+        )
+      ],
+    ));
+  }
+
+  Widget body() {
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       contentPadding: EdgeInsets.all(16),
@@ -78,22 +93,7 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
         child: Column(
           children: [
             // Amount
-            TextField(
-              controller: _amountController,
-              keyboardType: TextInputType.number,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                VNDTextInputFormatter(),
-              ],
-              onTapOutside: (event) => FocusScope.of(context).unfocus(),
-              decoration: InputDecoration(
-                labelText: "app.amount".tr,
-                prefixIcon: Icon(Icons.payments_outlined),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(16)),
-                )
-              ),
-            ),
+            amountField(),
 
             const SizedBox(height: 16),
 
@@ -106,71 +106,145 @@ class _AddCashFlowEntryDialogState extends State<AddCashFlowEntryDialog> {
 
             FullDatePicker(
               initialDate: DateTime.now(),
-                onDateChanged: (date) { setState(() => selectedDate = date); },
+              onDateChanged: (date) { setState(() => selectedDate = date); },
             ),
 
             const SizedBox(height: 16),
 
             // Date
-            Row(
-              children: [
-                Text(dateService.format(selectedDate, pattern: 'yMMMd')),
-                const Spacer(),
-                TextButton(
-                  style: ButtonStyle(
-                    shape: WidgetStatePropertyAll(
-                      RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    ),
-                  ),
-                  onPressed: () async {
-                    final d = await showDatePicker(
-                      context: context,
-                      locale: loc.currentLocale,
-                      firstDate: DateTime(2000),
-                      lastDate: DateTime(2100),
-                      initialDate: selectedDate,
-                    );
-                    if (d != null) setState(() => selectedDate = d);
-                  },
-                  child: Text("app.pickDate".tr),
-                )
-              ],
-            ),
+            dateField(),
 
             const SizedBox(height: 16),
 
             // Note
-            TextField(
-              controller: _noteController,
-              decoration: InputDecoration(
-                labelText: "app.note".tr,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(16))
-                )
-              ),
-              onTapOutside: (event) => FocusScope.of(context).unfocus(),
-            )
+            noteField()
           ],
         ),
       ),
       actionsPadding: EdgeInsets.all(16),
-      actions: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            deleteButton(),
-            Row(
-              children: [
-                cancelButton(context),
-                const SizedBox(width: 8),
-                saveButton()
-              ],
+      actions: [ actions() ],
+    );
+  }
+
+  Widget amountSuggestion() {
+    if (!_amountFocus.hasFocus) return SizedBox.shrink();
+    if (_amountController.text.isEmpty) return SizedBox.shrink();
+    double amountNumb = double.tryParse(_amountController.text.replaceAll('.', ''))!;
+    return Container(
+      color: Get.theme.scaffoldBackgroundColor,
+      padding: EdgeInsets.all(8),
+      width: Get.width,
+      child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        Expanded(child: amountSuggestionItem(amountNumb*100)),
+        SizedBox(width: 8),
+        Expanded(child: amountSuggestionItem(amountNumb*1000)),
+        SizedBox(width: 8),
+        Expanded(child: amountSuggestionItem(amountNumb*10000)),
+      ],
+    ),
+    );
+  }
+
+  Widget amountSuggestionItem(double amount) {
+    return TextButton(
+      style: ButtonStyle(
+        shape: WidgetStatePropertyAll(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(
+              color: Get.theme.colorScheme.primary,
             ),
+          ),
+        ),
+      ),
+      onPressed: () {
+        _amountController.text = formatter.format(amount);
+        _amountController.selection = TextSelection.collapsed(offset: _amountController.text.length);
+      },
+      child: Text(formatAmount(amount))
+    );
+  }
+
+  Widget amountField() {
+    return TextField(
+      controller: _amountController,
+      focusNode: _amountFocus,
+      keyboardType: TextInputType.number,
+      inputFormatters: [
+        FilteringTextInputFormatter.digitsOnly,
+        VNDTextInputFormatter(),
+      ],
+      // onTapOutside: (event) => FocusScope.of(context).unfocus(),
+      onChanged: (value) {
+        if (value.length > 5) return;
+        setState(() { });
+      },
+      decoration: InputDecoration(
+        labelText: "app.amount".tr,
+        prefixIcon: Icon(Icons.payments_outlined),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(16)),
+        )
+      ),
+    );
+  }
+
+  Widget dateField() {
+    return Row(
+      children: [
+        Text(dateService.format(selectedDate, pattern: 'yMMMd')),
+        const Spacer(),
+        TextButton(
+          style: ButtonStyle(
+            shape: WidgetStatePropertyAll(
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ),
+          ),
+          onPressed: () async {
+            final d = await showDatePicker(
+              context: context,
+              locale: loc.currentLocale,
+              firstDate: DateTime(2000),
+              lastDate: DateTime(2100),
+              initialDate: selectedDate,
+            );
+            if (d != null) setState(() => selectedDate = d);
+          },
+          child: Text("app.pickDate".tr),
+        )
+      ],
+    );
+  }
+
+  Widget noteField() {
+    return TextField(
+      controller: _noteController,
+      decoration: InputDecoration(
+        labelText: "app.note".tr,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(16))
+        )
+      ),
+      onTapOutside: (event) => FocusScope.of(context).unfocus(),
+    );
+  }
+
+  Widget actions() => 
+    Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        deleteButton(),
+        Row(
+          children: [
+            cancelButton(context),
+            const SizedBox(width: 8),
+            saveButton()
           ],
         ),
       ],
     );
-  }
 
   Widget saveButton() {
     return FilledButton(
