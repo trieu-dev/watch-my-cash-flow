@@ -139,12 +139,13 @@ class EntryList extends GetView<CalendarController> {
   Widget build(BuildContext context) {
     return Obx(() {
       final entries = (controller.mDate2Entries[day]??[]);
-      final items = entries.length > 3 ? entries.take(3) : entries;
+      final total = entries.length;
+      final shownItems = total > 3 ? entries.take(3) : entries;
       final isLimitExceeded = entries.length > 3;
       return Column(
         children: [
-          ...items.map((e) => clickableItem(e, context)),
-          isLimitExceeded ? moreItem() : SizedBox.shrink(),
+          ...shownItems.map((e) => clickableItem(e, context)),
+          isLimitExceeded ? moreItem(rest: total - 3) : SizedBox.shrink(),
         ],
       );
     });
@@ -176,10 +177,10 @@ class EntryList extends GetView<CalendarController> {
     );
   }
 
-  Widget moreItem() {
+  Widget moreItem({required int rest}) {
     return baseItem(
       child: Text(
-        '...',
+        '+$rest',
         style: TextStyle(
           fontSize: 12,
           height: 1,

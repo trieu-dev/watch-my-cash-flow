@@ -45,21 +45,6 @@ class _MainPageState extends State<MainPage> {
       appBar: appBar(),
       body: SafeArea(
         child: CalendarPage()
-        // PageView.builder(
-        //   onPageChanged: (value) {
-        //     setState(() {
-        //       month = DateTime(
-        //         DateTime.now().year,
-        //         DateTime.now().month + (value - 5000),
-        //       );
-        //     });
-        //   },
-        //   controller: _pageController,
-        //   itemBuilder: (context, index) {
-        //     final month = monthFromIndex(index);
-        //     return MonthCalendar(month: month, mDate2Entries: mDate2Entries, onAfterUpdated: handleAfterUpdated); // your existing month grid
-        //   },
-        // )
       ),
       floatingActionButton: addEntryButton(),
     );
