@@ -5,6 +5,7 @@ import 'package:watch_my_cash_flow/app/services/date_service.dart';
 import 'package:watch_my_cash_flow/calendar/calendar_controller.dart';
 import 'package:watch_my_cash_flow/calendar/date_utils.dart';
 import 'package:watch_my_cash_flow/data/model/cash_flow_entry.dart';
+import 'package:watch_my_cash_flow/utils/money_text_formatter.dart';
 
 class WeekPager extends GetView<CalendarController> {
   const WeekPager({super.key});
@@ -109,21 +110,40 @@ class EntryList extends GetView<CalendarController> {
   Widget build(BuildContext context) {
     return Obx(() {
       final entries = (controller.mDate2Entries[day]??[]);
+      double totalAmount = entries.fold(0, (a, b) => a + b.amount);
       return Padding(
-        padding: EdgeInsetsGeometry.all(2),
-        child: Column(
+        padding: EdgeInsetsGeometry.all(4),
+        child: Row(
           children: [
-            Expanded(child: ListView.separated(
-              itemBuilder:(context, index) {
-                return clickableItem(entries.elementAt(index), context);
-              },
-              separatorBuilder:(context, index) {
-                return SizedBox(height: 2);
-              },
-              itemCount: entries.length
-            ))
-          ],
-        ),
+            Expanded(child: Column(
+              children: [
+                Expanded(child: ListView.separated(
+                  itemBuilder:(context, index) {
+                    return clickableItem(entries.elementAt(index), context);
+                  },
+                  separatorBuilder:(context, index) {
+                    return SizedBox(height: 2);
+                  },
+                  itemCount: entries.length
+                ))
+              ],
+            )),
+            if (totalAmount != 0) Container(
+              padding: EdgeInsets.only(left: 8),
+              width: 80,
+              child: Text(
+                formatAmount(totalAmount),
+                style: TextStyle(
+                  fontSize: 16,
+                  height: 1,
+                  fontWeight: FontWeight.w500,
+                  // fontStyle: FontStyle.italic,
+                  color: Get.theme.colorScheme.primary,
+                )
+              )
+            ),
+          ]
+        )
       );
     });
   }
