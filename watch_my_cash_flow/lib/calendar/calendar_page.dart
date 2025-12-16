@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 import 'package:watch_my_cash_flow/calendar/calendar_controller.dart';
 import 'package:watch_my_cash_flow/calendar/month_view.dart';
 import 'package:watch_my_cash_flow/calendar/week_view.dart';
@@ -12,9 +11,6 @@ class CalendarPage extends GetView<CalendarController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Obx(() => Text(
-              DateFormat.yMMMM().format(controller.currentDate),
-            )),
         actions: [
           Obx(() {
             final isMonth = controller.viewMode.value == CalendarViewMode.month;
