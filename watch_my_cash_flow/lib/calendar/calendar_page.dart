@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:watch_my_cash_flow/calendar/calendar_controller.dart';
 import 'package:watch_my_cash_flow/calendar/month_view.dart';
 import 'package:watch_my_cash_flow/calendar/week_view.dart';
+import 'package:watch_my_cash_flow/statistic/month_view.dart';
 
 class CalendarPage extends GetView<CalendarController> {
   const CalendarPage({super.key});
@@ -13,12 +14,23 @@ class CalendarPage extends GetView<CalendarController> {
       appBar: AppBar(
         actions: [
           Obx(() {
-            final isMonth = controller.viewMode.value == CalendarViewMode.month;
+            final isCalendar = controller.viewMode.value == ViewMode.calendar;
+
+            return IconButton(
+              icon: Icon(isCalendar ? Icons.auto_graph : Icons.calendar_view_month),
+              onPressed: () {
+                controller.viewMode.value =
+                    isCalendar ? ViewMode.statistic : ViewMode.calendar;
+              },
+            );
+          }),
+          Obx(() {
+            final isMonth = controller.calendaViewMode.value == CalendarViewMode.month;
 
             return IconButton(
               icon: Icon(isMonth ? Icons.view_week : Icons.calendar_month),
               onPressed: () {
-                controller.viewMode.value =
+                controller.calendaViewMode.value =
                     isMonth ? CalendarViewMode.week : CalendarViewMode.month;
               },
             );
@@ -32,9 +44,9 @@ class CalendarPage extends GetView<CalendarController> {
           duration: Duration(milliseconds: 280),
           transitionBuilder: (child, anim) =>
               FadeTransition(opacity: anim, child: child),
-          child: controller.viewMode.value == CalendarViewMode.month
-              ? MonthPager()
-              : WeekPager(),
+          child: controller.calendaViewMode.value == CalendarViewMode.month
+              ? (controller.viewMode.value == ViewMode.calendar ? MonthPager() : MonthStatistic())
+              : (controller.viewMode.value == ViewMode.calendar ? WeekPager() : MonthStatistic())
         );
       }),
     );

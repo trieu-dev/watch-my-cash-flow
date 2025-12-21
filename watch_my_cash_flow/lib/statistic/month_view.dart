@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:watch_my_cash_flow/add_cash_flow_entry.dart';
@@ -5,9 +7,10 @@ import 'package:watch_my_cash_flow/app/services/date_service.dart';
 import 'package:watch_my_cash_flow/calendar/calendar_controller.dart';
 import 'package:watch_my_cash_flow/data/model/cash_flow_entry.dart';
 import 'package:watch_my_cash_flow/utils/money_text_formatter.dart';
+import 'package:watch_my_cash_flow/utils/pie_chart.dart';
 
-class MonthPager extends GetView<CalendarController> {
-  const MonthPager({super.key});
+class MonthStatistic extends GetView<CalendarController> {
+  const MonthStatistic({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +19,7 @@ class MonthPager extends GetView<CalendarController> {
       onPageChanged: controller.handleMonthPageViewChanged,
       itemBuilder: (context, index) {
         final month = monthFromIndex(index);
-        return MonthCalendar(month: month); // your existing month grid
+        return MonthStatisticView(month: month); // your existing month grid
       },
     );
   }
@@ -29,18 +32,32 @@ class MonthPager extends GetView<CalendarController> {
   }
 }
 
-class MonthCalendar extends GetView<CalendarController> {
+class MonthStatisticView extends GetView<CalendarController> {
   final DateTime month;
 
-  const MonthCalendar({ super.key, required this.month });
+  const MonthStatisticView({ super.key, required this.month });
 
   
   @override
   Widget build(BuildContext context) {
-    final days = getCalendarDays(month);
-    final weekdays = days.sublist(0, 7);
+    Map<BigInt, List<CashFlowEntry>> mCate2Entries = {};
+    Map<BigInt, double> mCate2Total = {};
+    final first = firstDayOfMonth(month);
+    final last = lastDayOfMonth(month);
+    
     final dayInMonthColor = Theme.of(context).colorScheme.onSurface;
     final dayNotInMonthColor = Theme.of(context).colorScheme.surfaceContainerHighest;
+
+    final entries = controller.cashFlowEntries.where((o) => o.date.isAfter(first) && o.date.isBefore(last)).toList();
+    for (var e in entries) {
+      mCate2Entries.putIfAbsent(e.categoryId, () => []).add(e);
+      if (mCate2Total.containsKey(e.categoryId)) {
+        mCate2Total.update(e.categoryId, (value) => value + e.amount);
+      } else {
+        mCate2Total.addAll({e.categoryId: e.amount});
+      }
+      // mCate2Total.putIfAbsent(e.categoryId, () => e.amount) + e.amount;
+    }
 
     return LayoutBuilder(builder: (context, constraints) {
       // total usable width/height inside SafeArea
@@ -53,81 +70,45 @@ class MonthCalendar extends GetView<CalendarController> {
       // compute cell sizes
       final cellWidth = (totalWidth - (6 * 2)) / 7;
       final cellHeight = (availableHeight - (7 * 2)) / 6;
+      print(mCate2Total.values.join(','));
 
       // childAspectRatio = cellWidth / cellHeight
       final childAspectRatio = cellWidth / cellHeight;
       return Padding(padding: EdgeInsets.all(2),
         child: Column(
           children: [
-            SizedBox(
-              height: 30,
-              child: Center(
-                child: GridView.builder(
-                  padding: EdgeInsets.zero,
-                  itemCount: weekdays.length,
-                  shrinkWrap: true,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 7, // 7 days per row
-                    childAspectRatio: cellWidth / 30
-                  ),
-                  itemBuilder: (context, index) {
-                    final day = weekdays[index];
-
-                    return Center(
-                      child: Text(
-                        dateService.dayShort(day),
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: dayInMonthColor)
-                      )
-                    );
-                  }
-                )
-              )
+            PieChart(
+              values: mCate2Total.values.toList()
             ),
-            Expanded(child: GridView.builder(
-              physics: NeverScrollableScrollPhysics(),
-              padding: EdgeInsets.zero,
-              itemCount: days.length,
-              shrinkWrap: true,
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 7, // 7 days per row
-                mainAxisSpacing: 2,
-                crossAxisSpacing: 2,
-                childAspectRatio: childAspectRatio
-              ),
-              itemBuilder: (context, index) {
-                final day = days[index];
-                final isToday = isSameDate(day, DateTime.now());
-                final isCurrentMonth = day.month == month.month;
 
-                return Card(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                  color: isToday
-                      ? Get.theme.colorScheme.primary.withValues(alpha: .05)
-                      : Get.theme.cardTheme.color,
-                  child: Column(
+            SizedBox(height: 16),
+
+            Expanded(child: DefaultTabController(
+              length: mCate2Entries.keys.length,
+              child: Column(
+                children: [
+                  TabBar(
+                    isScrollable: true, // 👈 allows scrolling
+                    // labelColor: appColor.white,
+                    // unselectedLabelColor: appColor.textPrimary,
+                    // indicatorColor: appColor.white,
+                    tabs: [
+                      ...mCate2Entries.keys.map((o) => Text(o.toString()))
+                    ]
+                  ),
+                  Expanded(child: TabBarView(
                     children: [
-                      Text(
-                        "${day.day}",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: isToday ? Get.theme.colorScheme.primary : (isCurrentMonth ? dayInMonthColor : dayNotInMonthColor),
-                          fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
-                        ),
-                      ),
-                      Expanded(child: EntryList(day: day))
+                      ...mCate2Entries.keys.map((o) => Text(o.toString()))
                     ],
-                  )
-                );
-            }))
+                  ))
+                ]
+              )
+            ))
+
           ],
         )
       );  
   });
-  }
-
-  bool isSameDate(DateTime a, DateTime b) {
-    return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 }
 
@@ -208,17 +189,11 @@ class EntryList extends GetView<CalendarController> {
   }
 }
 
-List<DateTime> getCalendarDays(DateTime month) {
-  // 1. First day of the month
-  final firstDayOfMonth = DateTime(month.year, month.month, 1);
-
-  // 2. Weekday of the first day (Mon=1 ... Sun=7)
-  int weekdayOfFirst = firstDayOfMonth.weekday;
-  // int weekdayOfFirst = DateTime.monday;
-
-  // 3. Calculate the first date shown in the calendar (previous Monday/Sunday)
-  DateTime firstDisplayDate = firstDayOfMonth.subtract(Duration(days: weekdayOfFirst % 7));
-
-  // 4. Generate 42 days for a 6×7 grid
-  return List.generate(42, (i) => firstDisplayDate.add(Duration(days: i)));
+DateTime firstDayOfMonth(DateTime date) {
+  return DateTime(date.year, date.month, 1);
 }
+
+DateTime lastDayOfMonth(DateTime date) {
+  return DateTime(date.year, date.month + 1, 0);
+}
+

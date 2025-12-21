@@ -5,6 +5,7 @@ import 'package:watch_my_cash_flow/calendar/date_utils.dart';
 import 'package:watch_my_cash_flow/data/model/cash_flow_entry.dart';
 
 enum CalendarViewMode { month, week }
+enum ViewMode { calendar, statistic }
 
 class CalendarController extends GetxController {
   final _anchoredDate = DateTime.now().dateOnly.obs;
@@ -13,7 +14,8 @@ class CalendarController extends GetxController {
   final _currentDate = DateTime.now().dateOnly.obs;
   DateTime get currentDate => _currentDate.value;
 
-  var viewMode = CalendarViewMode.month.obs;
+  var calendaViewMode = CalendarViewMode.month.obs;
+  var viewMode = ViewMode.calendar.obs;
 
   /// Used for PageView initial index
   final int centerMonthPage = 5000;
