@@ -44,9 +44,6 @@ class MonthStatisticView extends GetView<CalendarController> {
     Map<BigInt, double> mCate2Total = {};
     final first = firstDayOfMonth(month);
     final last = lastDayOfMonth(month);
-    
-    final dayInMonthColor = Theme.of(context).colorScheme.onSurface;
-    final dayNotInMonthColor = Theme.of(context).colorScheme.surfaceContainerHighest;
 
     final entries = controller.cashFlowEntries.where((o) => o.date.isAfter(first) && o.date.isBefore(last)).toList();
     for (var e in entries) {
@@ -56,24 +53,9 @@ class MonthStatisticView extends GetView<CalendarController> {
       } else {
         mCate2Total.addAll({e.categoryId: e.amount});
       }
-      // mCate2Total.putIfAbsent(e.categoryId, () => e.amount) + e.amount;
     }
 
     return LayoutBuilder(builder: (context, constraints) {
-      // total usable width/height inside SafeArea
-      final totalWidth = constraints.maxWidth;
-      final totalHeight = constraints.maxHeight;
-
-      // subtract header (if you want no header set headerHeight = 0)
-      final availableHeight = totalHeight - 30;
-
-      // compute cell sizes
-      final cellWidth = (totalWidth - (6 * 2)) / 7;
-      final cellHeight = (availableHeight - (7 * 2)) / 6;
-      print(mCate2Total.values.join(','));
-
-      // childAspectRatio = cellWidth / cellHeight
-      final childAspectRatio = cellWidth / cellHeight;
       return Padding(padding: EdgeInsets.all(2),
         child: Column(
           children: [
@@ -93,12 +75,12 @@ class MonthStatisticView extends GetView<CalendarController> {
                     // unselectedLabelColor: appColor.textPrimary,
                     // indicatorColor: appColor.white,
                     tabs: [
-                      ...mCate2Entries.keys.map((o) => Text(o.toString()))
+                      ...mCate2Entries.keys.map((o) => Text(controller.mId2Category[o]?.name ?? ""))
                     ]
                   ),
                   Expanded(child: TabBarView(
                     children: [
-                      ...mCate2Entries.keys.map((o) => Text(o.toString()))
+                      ...mCate2Entries.keys.map((o) => tabBody(mCate2Entries[o]))
                     ],
                   ))
                 ]
@@ -109,6 +91,32 @@ class MonthStatisticView extends GetView<CalendarController> {
         )
       );  
   });
+  }
+
+  Widget tabBody(List<CashFlowEntry>? list) {
+    if (list == null) return SizedBox.shrink();
+
+    list.sort((a, b) => a.date.isAfter(b.date) ? -1 : 1);
+
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          ...list.map((o) {
+            return Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                  Text(dateService.dayAndMonthShort(o.date)),
+                  SizedBox(width: 16,),
+                  Text(formatAmount(o.amount))
+                ]
+              ),
+            );
+          })
+        ],
+      ),
+    );
   }
 }
 

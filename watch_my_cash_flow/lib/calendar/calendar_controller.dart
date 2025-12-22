@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:watch_my_cash_flow/app/services/supabase_service.dart';
 import 'package:watch_my_cash_flow/calendar/date_utils.dart';
 import 'package:watch_my_cash_flow/data/model/cash_flow_entry.dart';
+import 'package:watch_my_cash_flow/data/model/category.dart';
 
 enum CalendarViewMode { month, week }
 enum ViewMode { calendar, statistic }
@@ -55,7 +57,6 @@ class CalendarController extends GetxController {
     final isNewMonth = days.every((o) => o.month != currentDate.month);
     if (isNewMonth) {
       final newDay = addMonths(anchoredDate, days[0].month - anchoredDate.month).dateOnly;
-      print('Calendar controller ::: $newDay >>>');
       _currentDate.value = newDay;
     }
   }
@@ -71,6 +72,7 @@ class CalendarController extends GetxController {
   @override
   void onInit() {
     init();
+    getCategories();
     super.onInit();
 
     ever(viewMode, (mode) {
@@ -88,6 +90,25 @@ class CalendarController extends GetxController {
     for (var entry in data) {
       _mDate2Entries.putIfAbsent(entry.dateOnly, () => []).add(entry);
     }
+  }
+
+  final _categories = <Category>[].obs;
+  List<Category> get categories => _categories;
+  Map<BigInt, Category> get mId2Category {
+    Map<BigInt, Category> mapping = {};
+    for (var c in _categories) {
+      mapping.addAll({c.id: c});
+    }
+    return mapping;
+  }
+
+  Future getCategories() async {
+    final res = await SupabaseService().client.from('categories').select('id, name');
+    
+    _categories.value = (res as List)
+      .map((m) => Category.fromMap(m as Map<String, dynamic>))
+      .toList();
+    _categories.sort((a, b) => a.name.compareTo(b.name));
   }
 
   void handleSave(CashFlowEntry? result) {
